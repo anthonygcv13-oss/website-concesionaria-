@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Custom theme declarations for Modelos2 page to avoid conflicts */
+@theme {
+  --font-body-md-m2: "Hanken Grotesk", sans-serif;
+  --font-body-lg-m2: "Hanken Grotesk", sans-serif;
+  --font-display-xl-m2: "Manrope", sans-serif;
+  --font-headline-lg-mobile-m2: "Manrope", sans-serif;
+  --font-headline-lg-m2: "Manrope", sans-serif;
+  --font-label-sm-m2: "Hanken Grotesk", sans-serif;
+  --font-title-md-m2: "Manrope", sans-serif;
+
+  --font-size-body-md-m2: 16px;
+  --font-size-body-lg-m2: 18px;
+  --font-size-display-xl-m2: 64px;
+  --font-size-headline-lg-mobile-m2: 32px;
+  --font-size-headline-lg-m2: 40px;
+  --font-size-label-sm-m2: 12px;
+  --font-size-title-md-m2: 24px;
+
+  --color-tertiary-fixed-m2: #f5e1b3;
+  --color-on-tertiary-fixed-m2: #241a00;
+  --color-on-tertiary-container-m2: #93825b;
+  --color-tertiary-fixed-dim-m2: #d8c598;
+  --color-on-tertiary-fixed-variant-m2: #534523;
+
+  --spacing-margin-tablet: 40px;
+  --spacing-margin-desktop-m2: 80px;
+  --spacing-section-gap-m2: 120px;
+}
+
+/* Material Symbols Outlined Custom Configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Page Specific Special Custom Styles */
+.glass-nav {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.luxury-gradient-text {
+  background: linear-gradient(to right, #775a19, #ffdea5, #775a19);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-gradient {
+  background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+}
+
+.shimmer:hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer:hover::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: rotate(45deg);
+  animation: shimmer-effect 1s infinite;
+}
+
+@keyframes shimmer-effect {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #775a19;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #775a19 0%, #ffdea5 50%, #775a19 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-gradient {
+  border-image: linear-gradient(to right, #775a19, #ffdea5, #775a19) 1;
+}
+
+.hero-mask {
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+.form-underline {
+  position: relative;
+}
+
+.form-underline::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: #775a19;
+  transition: width 0.3s ease;
+}
+
+.form-underline:focus-within::after {
+  width: 100%;
+}
+
+.transition-soft {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}

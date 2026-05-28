@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cotizar | CARLIZ Automotive</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#785a1a",
+                    "surface-container": "#efeded",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "secondary-fixed-dim": "#e9c176",
+                    "on-primary-fixed-variant": "#474646",
+                    "surface": "#fbf9f8",
+                    "outline-variant": "#c4c7c7",
+                    "on-primary-container": "#858383",
+                    "on-tertiary-container": "#838484",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#c9c6c5",
+                    "secondary-fixed": "#ffdea5",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#c9c6c5",
+                    "on-secondary-fixed-variant": "#5d4201",
+                    "secondary-container": "#fed488",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#c6c6c7",
+                    "surface-variant": "#e4e2e2",
+                    "inverse-surface": "#303031",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e4e2e2",
+                    "on-error-container": "#93000a",
+                    "background": "#fbf9f8",
+                    "on-primary-fixed": "#1c1b1b",
+                    "inverse-on-surface": "#f2f0f0",
+                    "on-secondary-fixed": "#261900",
+                    "on-surface": "#1b1c1c",
+                    "on-surface-variant": "#444748",
+                    "primary": "#000000",
+                    "outline": "#747878",
+                    "tertiary-container": "#1a1c1c",
+                    "surface-container-high": "#e9e8e7",
+                    "primary-container": "#1c1b1b",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#5f5e5e",
+                    "primary-fixed": "#e5e2e1",
+                    "secondary": "#775a19",
+                    "surface-bright": "#fbf9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed": "#e2e2e2",
+                    "surface-container-low": "#f5f3f3",
+                    "tertiary": "#000000",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#dbdad9",
+                    "on-background": "#1b1c1c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "margin-mobile": "20px",
+                    "section-padding": "120px",
+                    "container-max": "1280px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Libre Caslon Text"],
+                    "headline-lg": ["Libre Caslon Text"],
+                    "label-md": ["Manrope"],
+                    "body-md": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "headline-lg-mobile": ["Libre Caslon Text"],
+                    "display-lg": ["Libre Caslon Text"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "56px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "400"}],
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .form-underline {
+            position: relative;
+        }
+        .form-underline::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #775a19;
+            transition: width 0.3s ease;
+        }
+        .form-underline:focus-within::after {
+            width: 100%;
+        }
+        .transition-soft {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-secondary/30">
+<!-- TopNavBar -->
+<nav class="bg-surface/90 dark:bg-primary/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm fixed w-full z-50 top-0">
+<div class="flex justify-between items-center h-20 px-margin-desktop max-w-container-max mx-auto">
+            <div class="font-headline-lg text-headline-lg text-primary dark:text-white tracking-tighter cursor-pointer" onclick="window.location.href='inicio.html'">
+                CARLIZ
+            </div>
+            <div class="hidden md:flex gap-10 items-center">
+                <a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" href="inicio.html">Inicio</a>
+                <a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" href="Modelos2.html">Modelos</a>
+                <a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" href="Servicios.html">Servicios</a>
+                <a class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" href="inicio.html#testimonials">Nosotros</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <button class="bg-secondary text-white px-8 py-3 font-label-md text-label-md uppercase tracking-widest hover:opacity-80 transition-all duration-300 active:scale-95" onclick="window.location.href='Cotizaciones.html'">
+                    Cotizar
+                </button>
+<button class="md:hidden">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="min-h-screen pt-20 flex items-center justify-center overflow-hidden">
+<!-- Asymmetric Layout: Form + Image -->
+<div class="w-full max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 min-h-[calc(100vh-80px)]">
+<!-- Form Section (5 Columns) -->
+<section class="col-span-1 md:col-span-5 flex flex-col justify-center px-margin-mobile md:px-margin-desktop py-12 bg-white">
+<div class="max-w-md w-full mx-auto space-y-12">
+<header class="space-y-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="h-[1px] w-12 bg-secondary"></span>
+<span class="font-label-md text-label-md uppercase tracking-[0.2em]">Exclusividad</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-primary leading-tight">
+                            Solicite su <span class="italic font-normal">Propuesta Personalizada</span>
+</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+                            Cada detalle de su próxima adquisición automotriz comienza con una conversación dedicada a sus estándares.
+                        </p>
+</header>
+<form class="space-y-8" id="quoteForm">
+<div class="form-underline group">
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" for="nombre">Nombre Completo</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg placeholder:text-outline-variant/50" id="nombre" name="nombre" placeholder="Ej. Alejandro Mendoza" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="form-underline group">
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" for="email">Email</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg placeholder:text-outline-variant/50" id="email" name="email" placeholder="contacto@carliz.com" type="email"/>
+</div>
+<div class="form-underline group">
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" for="telefono">Teléfono</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg placeholder:text-outline-variant/50" id="telefono" name="telefono" placeholder="+34 600 000 000" type="tel"/>
+</div>
+</div>
+<div class="form-underline group">
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" for="modelo">Modelo de Interés</label>
+<select class="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg appearance-none cursor-pointer" id="modelo" name="modelo">
+<option disabled="" selected="">Seleccione un modelo</option>
+<option>Grand Tourer Concept</option>
+<option>Stratos Performance</option>
+<option>Elysium Luxury Sedan</option>
+<option>Aura EV Special Edition</option>
+</select>
+</div>
+<div class="form-underline group">
+<label class="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" for="mensaje">Requerimientos Especiales</label>
+<textarea class="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg placeholder:text-outline-variant/50 resize-none" id="mensaje" name="mensaje" placeholder="Escriba aquí sus dudas o preferencias..." rows="2"></textarea>
+</div>
+<button class="w-full bg-secondary text-white py-5 font-label-md text-label-md uppercase tracking-[0.2em] shadow-lg shadow-secondary/20 hover:shadow-secondary/40 hover:-translate-y-1 transition-all duration-300 active:scale-[0.98]" type="submit">
+                            Enviar Solicitud
+                        </button>
+</form>
+</div>
+</section>
+<!-- Media Section (7 Columns) -->
+<section class="hidden md:block col-span-1 md:col-span-7 relative bg-primary overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent z-10 w-32"></div>
+<img alt="Luxury Sports Car" class="absolute inset-0 w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-10000 ease-linear" data-alt="A high-end luxury sports car captured in a moody, low-key lighting environment that emphasizes its sleek aerodynamic curves. The vehicle is finished in a sophisticated deep obsidian black that reflects the sharp, minimalist lines of a modern architectural space. The background consists of a premium showroom with subtle metallic gold accents and soft, cinematic lighting. The overall aesthetic is one of prestige, precision engineering, and exclusive performance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHeV9CJ0jEl0LkZGdsNu8VoGcOOQy--HVkqMBn4r_SC6yT5DcYkQ6MVH5bduQFSG6Yl6WtoPlccyCfzaWH96uw07EQUtrR-Uu7hRa9GFvyrkgEw0z81bFAvR6dEw6OY0XrRdUr9HR4Zf6Fl_QGB5YE5JTI5hl2D2pQh27uyFI43VtBArqcRrdtqTf9SbgahlI5vfJPaW7dvX8HZAYRJQ10YpyMAXo_NcMTkUqH8UeLjSp7HApmIgIMb0K7Al7zzC2V7Ol46hCoynq3"/>
+<!-- Floating Info Card (Editorial Influence) -->
+<div class="absolute bottom-20 left-20 z-20 max-w-sm backdrop-blur-md bg-white/10 border border-white/20 p-8 space-y-4">
+<p class="font-label-md text-label-md text-secondary-fixed tracking-widest uppercase">Every Second Counts</p>
+<h2 class="font-headline-lg text-headline-lg text-white">Ingeniería que desafía lo convencional.</h2>
+<div class="flex items-center gap-4 pt-4">
+<div class="flex flex-col">
+<span class="font-headline-lg text-white">0.22</span>
+<span class="font-label-md text-label-md text-white/60 text-[10px] uppercase">Drag Coef.</span>
+</div>
+<div class="w-[1px] h-10 bg-white/20"></div>
+<div class="flex flex-col">
+<span class="font-headline-lg text-white">2.1s</span>
+<span class="font-label-md text-label-md text-white/60 text-[10px] uppercase">0-100 km/h</span>
+</div>
+</div>
+</div>
+<!-- Overlay for logo integration -->
+<div class="absolute top-20 right-20 z-20 opacity-20 invert grayscale">
+<img alt="Subtle Logo Overlay" class="w-32" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKc_Y9LW4_mJCkS5nZfaXuAHKrifJipPwN5H_TqVfSeV_lWfPKzWaVUYALVu850w-6zFY1MjwCMFGp1dpqk6iIDCSl1L57tmeDCGBn7Qv9ik3C2c3bCQ66qjfyqBYHBe47PXHKAhqCS2M2g2Vk-Vg-ccMwjSTQCN6A5NWpoJjd4YH08fA7TgU8fbWRS0ZtKFZTfkxHCgsMN-aXH0ywi9iLPc7LhohMk_xKb7T89vB9YZxV0VQ0CyXSe1X96jCLfnl6J_T6rbfwF6WQ"/>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-black border-t border-secondary/20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-padding max-w-container-max mx-auto">
+<div class="col-span-1 md:col-span-1 space-y-6">
+<div class="font-headline-xl text-headline-xl text-secondary-fixed">CARLIZ</div>
+<p class="font-body-md text-body-md text-on-primary-container max-w-xs">
+                    Definiendo el futuro de la movilidad de lujo a través de la precisión y el diseño atemporal.
+                </p>
+</div>
+<div class="col-span-1 space-y-6">
+<h4 class="font-label-md text-label-md text-white uppercase tracking-widest">Modelos</h4>
+<ul class="space-y-3">
+                <li><a class="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" href="Modelos2.html">Modelos Exclusivos</a></li>
+                <li><a class="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" href="Servicios.html">Taller Especializado</a></li>
+                <li><a class="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" href="Cotizaciones.html">Financiamiento Premium</a></li>
+            </ul>
+        </div>
+        <div class="col-span-1 space-y-6">
+            <h4 class="font-label-md text-label-md text-white uppercase tracking-widest">Compañía</h4>
+            <ul class="space-y-3">
+                <li><a class="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" href="Cotizaciones.html">Contacto</a></li>
+                <li><a class="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" href="inicio.html">Privacidad</a></li>
+</ul>
+</div>
+<div class="col-span-1 space-y-6">
+<h4 class="font-label-md text-label-md text-white uppercase tracking-widest">Sede</h4>
+<p class="font-body-md text-body-md text-on-primary-container">
+                    Av. de la Castellana, 280<br/>Madrid, España
+                </p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">language</span>
+<span class="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">share</span>
+<span class="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">location_on</span>
+</div>
+</div>
+</div>
+<div class="px-margin-desktop py-8 border-t border-white/5 max-w-container-max mx-auto flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-primary-container text-xs">© 2024 Carliz Automotive. Every Second Counts.</span>
+<div class="flex gap-8">
+<span class="font-label-md text-label-md text-secondary-fixed font-bold">ES</span>
+<span class="font-label-md text-label-md text-on-primary-container">EN</span>
+</div>
+</div>
+</footer>
+<script>
+        // Form Submission Interaction
+        document.getElementById('quoteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> PROCESANDO...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined mr-2">check_circle</span> ENVIADO';
+                btn.classList.replace('bg-secondary', 'bg-green-600');
+                btn.style.opacity = '1';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-secondary');
+                    btn.disabled = false;
+                    e.target.reset();
+                }, 3000);
+            }, 1500);
+        });
+
+        // Parallax Effect on Image
+        window.addEventListener('scroll', () => {
+            const img = document.querySelector('section.relative img');
+            const scrollVal = window.scrollY;
+            img.style.transform = `translateY(${scrollVal * 0.05}px) scale(1.05)`;
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('header, form > div, section.md\\:block').forEach(el => {
+            el.classList.add('transition-soft', 'opacity-0', 'translate-y-10');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

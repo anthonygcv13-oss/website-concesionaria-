@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&amp;family=Hanken+Grotesk:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#f5e1b3",
+                    "secondary": "#775a19",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-bright": "#f9f9f9",
+                    "on-primary-fixed-variant": "#474646",
+                    "primary": "#000000",
+                    "on-secondary-container": "#785a1a",
+                    "on-secondary-fixed": "#261900",
+                    "outline-variant": "#c4c7c7",
+                    "inverse-surface": "#2f3131",
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#241a00",
+                    "surface-container": "#eeeeee",
+                    "on-surface-variant": "#444748",
+                    "on-tertiary-fixed": "#241a00",
+                    "inverse-on-surface": "#f1f1f1",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-container": "#fed488",
+                    "on-tertiary-fixed-variant": "#534523",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-fixed-variant": "#5d4201",
+                    "inverse-primary": "#c9c6c5",
+                    "on-error": "#ffffff",
+                    "tertiary": "#000000",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#858383",
+                    "outline": "#747878",
+                    "background": "#f9f9f9",
+                    "surface-container-low": "#f3f3f3",
+                    "surface-container-high": "#e8e8e8",
+                    "on-surface": "#1a1c1c",
+                    "surface": "#f9f9f9",
+                    "tertiary-fixed-dim": "#d8c598",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#5f5e5e",
+                    "secondary-fixed-dim": "#e9c176",
+                    "on-tertiary-container": "#93825b",
+                    "primary-fixed-dim": "#c9c6c5",
+                    "surface-dim": "#dadada",
+                    "primary-fixed": "#e5e2e1",
+                    "primary-container": "#1c1b1b",
+                    "on-primary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#ffdea5",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-tablet": "40px",
+                    "gutter": "24px",
+                    "margin-desktop": "80px",
+                    "section-gap": "120px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "body-md": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "display-xl": ["Manrope"],
+                    "headline-lg-mobile": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "title-md": ["Manrope"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-xl": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "title-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-gradient {
+            background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+        }
+        .shimmer:hover {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer:hover::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 1s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #775a19;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary selection:text-white">
+<!-- TopAppBar Shell -->
+<header class="bg-surface dark:bg-primary text-primary dark:text-secondary font-headline-lg-mobile text-headline-lg-mobile uppercase tracking-widest docked full-width top-0 border-b border-outline-variant dark:border-secondary flat no shadows flex justify-between items-center px-margin-mobile h-16 w-full z-50 fixed md:px-margin-desktop">
+<div class="flex items-center gap-4">
+<button class="hover:text-secondary-fixed-dim transition-colors active:opacity-80 active:scale-95" onclick="toggleDrawer()">
+<span class="material-symbols-outlined">menu</span>
+</button>
+    <div class="hidden md:flex gap-8">
+      <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface dark:text-on-primary hover:text-secondary-fixed-dim transition-colors" href="Modelos2.html">Inventario</a>
+      <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface dark:text-on-primary hover:text-secondary-fixed-dim transition-colors" href="Servicios.html">Servicios</a>
+    </div>
+</div>
+<div class="flex-1 flex justify-center">
+<img alt="CARLIZ LUXURY MOTORS" class="h-10 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"/>
+</div>
+    <div class="flex items-center gap-4">
+      <div class="hidden md:flex gap-8 mr-8">
+        <a class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold hover:text-secondary-fixed-dim transition-colors" href="Modelos2.html">Modelos</a>
+        <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface dark:text-on-primary hover:text-secondary-fixed-dim transition-colors" href="inicio.html">Nosotros</a>
+      </div>
+      <button class="hover:text-secondary-fixed-dim transition-colors active:opacity-80 active:scale-95" onclick="window.location.href='Cotizaciones.html'">
+        <span class="material-symbols-outlined">shopping_bag</span>
+      </button>
+    </div>
+</header>
+<!-- NavigationDrawer Shell -->
+<div class="fixed inset-0 z-[70] hidden" id="drawer">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="toggleDrawer()"></div>
+<nav class="bg-surface dark:bg-primary text-secondary font-title-md text-title-md uppercase rounded-r-none h-full w-80 shadow-2xl fixed inset-y-0 left-0 z-[60] flex flex-col transition-transform duration-300 ease-in-out -translate-x-full" id="drawer-content">
+<div class="p-margin-mobile border-b border-outline-variant flex justify-between items-center">
+<span class="font-display-xl text-secondary">CARLIZ LUXURY</span>
+<button onclick="toggleDrawer()"><span class="material-symbols-outlined">close</span></button>
+</div>
+    <div class="flex-1 py-8 overflow-y-auto custom-scrollbar">
+      <a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface dark:text-on-primary hover:bg-tertiary-container hover:text-secondary transition-all" href="Modelos2.html">
+        <span class="material-symbols-outlined">directions_car</span>
+        <span>Inventario</span>
+      </a>
+      <a class="flex items-center gap-4 px-margin-mobile py-4 bg-secondary text-primary font-bold" href="Modelos2.html">
+        <span class="material-symbols-outlined">minor_crash</span>
+        <span>Modelos</span>
+      </a>
+      <a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface dark:text-on-primary hover:bg-tertiary-container hover:text-secondary transition-all" href="Servicios.html">
+        <span class="material-symbols-outlined">build</span>
+        <span>Servicios</span>
+      </a>
+      <a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface dark:text-on-primary hover:bg-tertiary-container hover:text-secondary transition-all" href="Cotizaciones.html">
+        <span class="material-symbols-outlined">payments</span>
+        <span>Financiamiento</span>
+      </a>
+      <a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface dark:text-on-primary hover:bg-tertiary-container hover:text-secondary transition-all" href="inicio.html">
+        <span class="material-symbols-outlined">history_edu</span>
+        <span>Nosotros</span>
+      </a>
+      <a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface dark:text-on-primary hover:bg-tertiary-container hover:text-secondary transition-all" href="Cotizaciones.html">
+        <span class="material-symbols-outlined">mail</span>
+        <span>Contacto</span>
+      </a>
+    </div>
+</nav>
+</div>
+<main class="pt-16 pb-20 md:pb-0">
+<!-- Hero Section / Title -->
+<section class="px-margin-mobile md:px-margin-desktop py-section-gap bg-white">
+<div class="max-w-7xl mx-auto">
+<h1 class="font-display-xl text-display-xl mb-6">CATÁLOGO EXCLUSIVO</h1>
+<p class="font-body-lg text-body-lg text-on-primary-container max-w-2xl">
+                    Descubra la ingeniería de precisión y el lujo sin concesiones. Cada vehículo en nuestra colección ha sido seleccionado por su rendimiento excepcional y pedigree histórico.
+                </p>
+</div>
+</section>
+<!-- Filters Bar -->
+<section class="sticky top-16 z-40 bg-surface-container-lowest border-b border-outline-variant px-margin-mobile md:px-margin-desktop py-4">
+<div class="max-w-7xl mx-auto flex overflow-x-auto gap-4 custom-scrollbar whitespace-nowrap items-center">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant mr-4">Filtrar por:</span>
+<button class="bg-primary text-on-primary px-6 py-2 font-label-sm text-label-sm uppercase transition-all">Todos</button>
+<button class="border border-outline px-6 py-2 font-label-sm text-label-sm uppercase hover:border-secondary hover:text-secondary transition-all">Coupé</button>
+<button class="border border-outline px-6 py-2 font-label-sm text-label-sm uppercase hover:border-secondary hover:text-secondary transition-all">Sedán</button>
+<button class="border border-outline px-6 py-2 font-label-sm text-label-sm uppercase hover:border-secondary hover:text-secondary transition-all">SUV Luxury</button>
+<button class="border border-outline px-6 py-2 font-label-sm text-label-sm uppercase hover:border-secondary hover:text-secondary transition-all">Clásicos</button>
+<button class="ml-auto flex items-center gap-2 text-secondary font-label-sm text-label-sm uppercase">
+<span class="material-symbols-outlined text-[18px]">tune</span> Refinar búsqueda
+                </button>
+</div>
+</section>
+<!-- Catalog Vertical List -->
+<section class="px-margin-mobile md:px-margin-desktop py-12 bg-surface">
+<div class="max-w-7xl mx-auto space-y-16">
+<!-- Model Card 1 -->
+<article class="group relative bg-white border border-outline-variant overflow-hidden flex flex-col md:flex-row transition-all duration-500 hover:border-secondary">
+<div class="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A sleek, aerodynamic black luxury sports car parked in a minimalist, high-tech showroom with polished concrete floors. Subtle gold ambient lighting highlights the sharp contours and carbon fiber details of the vehicle. The overall atmosphere is premium and exclusive, using a high-contrast palette of deep blacks and metallic accents in a contemporary light-mode studio setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBibmKew6jCewsB4rW08kMk7gKjv3DIYZlCWMLRXZU9cX5M-eqx4KPrLRiiu5mzB24loKDO27qLKRoB0tgE37iXwvXCg5uFKaZ3JHkRwR0rM35pzqbCUQ3cIspVUzCJb516OJB6S54HAvGqOS24ccCVaYEJV_zdymXaS0WAMksPLoimIfzg-eJlNrSMljtFF-nKIThbFFzBV0jTPv62LtUND5f_CYTkeMjbiyqP_9Pm3ncy5CcI2VoGgKUuABWJ8fQCyEoxHOGXCi3t"/>
+<div class="absolute top-6 left-6">
+<span class="bg-primary text-secondary px-4 py-1 font-label-sm text-label-sm uppercase tracking-widest">Disponible</span>
+</div>
+</div>
+<div class="md:w-2/5 p-8 md:p-12 flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase text-on-primary-container mb-2">Colección Heritage</p>
+<h2 class="font-headline-lg text-headline-lg mb-6 group-hover:text-secondary transition-colors">CARLIZ GT SPIRIT V12</h2>
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Potencia</span>
+<span class="font-title-md text-title-md">720 HP</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">0-100 km/h</span>
+<span class="font-title-md text-title-md">2.9 s</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Transmisión</span>
+<span class="font-title-md text-title-md">Dual-Clutch 8-Spd</span>
+</div>
+</div>
+</div>
+<div>
+<div class="mb-8">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant block mb-1">Precio Inicial</span>
+<span class="font-display-xl text-title-md text-secondary">$345,000 USD</span>
+</div>
+            <button class="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-sm text-label-sm uppercase tracking-widest transition-all shimmer active:scale-95" onclick="window.location.href='Cotizaciones.html'">Explorar Modelo</button>
+</div>
+</div>
+</article>
+<!-- Model Card 2 -->
+<article class="group relative bg-white border border-outline-variant overflow-hidden flex flex-col md:flex-row-reverse transition-all duration-500 hover:border-secondary">
+<div class="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="An elegant, silver grand tourer vehicle captured during the golden hour in the Swiss Alps. The car's metallic finish reflects the warm, orange sunlight against a backdrop of majestic, snow-capped peaks. Minimalist design aesthetic with a sophisticated and authoritative mood, emphasizing the vehicle's heritage and performance in an outdoor, luxury setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJMoT4LmoW0iv5ogKhLVC_KRbdB29VQnoYEY3GRlXC68msMVO54LW5UGP0fC7X8EtZfDJjBmcbvVMIU3XHOubSOjzSsHtzrH08QbOD7pXHz2fCQkf5y87w_2WIL8JVM7IUfSnWkRtXkYr_GJp4j0P7DTJomjbRlZeXoQmN-67Oa6k4xg2_1xHglX68LoHidIhXnFUxSaOHKMWSir3DlbKj5RpCG-RdhRY-JeLxxB6Ak3iOJ76zHKGsnBlqelnQgUSmkljW2ZI6P_tI"/>
+<div class="absolute top-6 right-6">
+<span class="bg-primary text-secondary px-4 py-1 font-label-sm text-label-sm uppercase tracking-widest">Edición Limitada</span>
+</div>
+</div>
+<div class="md:w-2/5 p-8 md:p-12 flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase text-on-primary-container mb-2">Performance Series</p>
+<h2 class="font-headline-lg text-headline-lg mb-6 group-hover:text-secondary transition-colors">CARLIZ MONZA EVO</h2>
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Potencia</span>
+<span class="font-title-md text-title-md">815 HP</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">V-Max</span>
+<span class="font-title-md text-title-md">350 km/h</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Peso</span>
+<span class="font-title-md text-title-md">1,450 kg</span>
+</div>
+</div>
+</div>
+<div>
+<div class="mb-8">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant block mb-1">Precio Inicial</span>
+<span class="font-display-xl text-title-md text-secondary">$580,000 USD</span>
+</div>
+            <button class="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-sm text-label-sm uppercase tracking-widest transition-all shimmer active:scale-95" onclick="window.location.href='Cotizaciones.html'">Explorar Modelo</button>
+</div>
+</div>
+</article>
+<!-- Model Card 3 -->
+<article class="group relative bg-white border border-outline-variant overflow-hidden flex flex-col md:flex-row transition-all duration-500 hover:border-secondary">
+<div class="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A pristine white luxury SUV featured in a bright, ethereal desert environment at dawn. The soft morning light highlights the smooth, sculptural lines of the car and the intricate gold-finished wheels. The composition is cinematic and airy, conveying a sense of adventure, freedom, and extreme sophistication in a high-end minimalist style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtJ09P0nLquIkgrzzAWLTwk3SBmS5ybBGyDIS6KSHaB5qSNBiDYwmh0hHM6W_oAOiRmLy12DaWifRDO5TZJqjgRovLHwR2JRW8Sh3PAo5bibREehN21tbKfmycowvViMTePvuqdvr-kSC6U5UalfCNFgLBjNFxnBg1t4p8EiqBHCoo6FmlCYshZ2BXTHnmGGLbe6s7YtlEx3xAJIFxA9cRkT0x28qc--QwN912nxC3qH-GpEvzThSfmqug3wFq_P31RMRpJn-hNal0"/>
+<div class="absolute top-6 left-6">
+<span class="bg-primary text-secondary px-4 py-1 font-label-sm text-label-sm uppercase tracking-widest">Pre-Orden</span>
+</div>
+</div>
+<div class="md:w-2/5 p-8 md:p-12 flex flex-col justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase text-on-primary-container mb-2">Grand SUV</p>
+<h2 class="font-headline-lg text-headline-lg mb-6 group-hover:text-secondary transition-colors">CARLIZ HORIZON X</h2>
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Tracción</span>
+<span class="font-title-md text-title-md">AWD Smart</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Motor</span>
+<span class="font-title-md text-title-md">V8 Hybrid</span>
+</div>
+<div class="flex items-center justify-between border-b border-outline-variant pb-2">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant">Autonomía</span>
+<span class="font-title-md text-title-md">950 km</span>
+</div>
+</div>
+</div>
+<div>
+<div class="mb-8">
+<span class="font-label-sm text-label-sm uppercase text-on-surface-variant block mb-1">Precio Inicial</span>
+<span class="font-display-xl text-title-md text-secondary">$290,000 USD</span>
+</div>
+            <button class="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-sm text-label-sm uppercase tracking-widest transition-all shimmer active:scale-95" onclick="window.location.href='Cotizaciones.html'">Explorar Modelo</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Call to Action -->
+<section class="py-section-gap bg-primary text-on-primary relative overflow-hidden">
+<div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop text-center relative z-10">
+<h3 class="font-headline-lg text-headline-lg mb-6">¿Busca algo Verdaderamente Único?</h3>
+<p class="font-body-lg text-body-lg text-on-primary-container max-w-xl mx-auto mb-12">
+                    Nuestro equipo de personalización puede dar vida a su visión más ambiciosa. Desde acabados en metales preciosos hasta tapicería artesanal exclusiva.
+                </p>
+  <div class="flex flex-col md:flex-row gap-6 justify-center">
+    <button class="bg-secondary text-primary px-10 py-5 font-label-sm text-label-sm uppercase tracking-widest hover:brightness-110 transition-all shimmer" onclick="window.location.href='Cotizaciones.html'">Programar Cita Privada</button>
+    <button class="border border-secondary text-secondary px-10 py-5 font-label-sm text-label-sm uppercase tracking-widest hover:bg-secondary/10 transition-all" onclick="window.location.href='Servicios.html'">Ver Servicios Tailor-Made</button>
+  </div>
+</div>
+<!-- Background Decoration -->
+<div class="absolute -bottom-24 -right-24 opacity-10">
+<img alt="" class="w-[600px] grayscale brightness-0 invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"/>
+</div>
+</section>
+</main>
+<!-- Footer Shell -->
+<footer class="bg-primary dark:bg-surface-container-lowest text-secondary font-body-md text-body-md text-center full-width bg-primary border-t border-on-primary-container flat flex flex-col items-center py-10 px-margin-mobile space-y-6">
+<div class="font-display-xl text-secondary text-headline-lg">CARLIZ LUXURY MOTORS</div>
+  <div class="flex gap-8">
+    <a class="text-on-primary-fixed-variant hover:text-white hover:text-secondary underline transition-opacity duration-200" href="inicio.html">Privacidad</a>
+    <a class="text-on-primary-fixed-variant hover:text-white transition-opacity duration-200" href="inicio.html">Términos</a>
+    <a class="text-on-primary-fixed-variant hover:text-white transition-opacity duration-200" href="inicio.html">Soporte</a>
+  </div>
+<div class="text-on-primary-fixed-variant uppercase tracking-widest text-[10px]">
+            © 2024 CARLIZ LUXURY MOTORS. TODOS LOS DERECHOS RESERVADOS.
+        </div>
+</footer>
+<!-- BottomNavBar Shell (Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full h-16 z-50 flex justify-around items-center bg-primary border-t border-secondary shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-primary-fixed-variant hover:text-secondary-fixed transition-all active:scale-90 duration-150" href="inicio.html">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-[10px] uppercase">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary border-t-2 border-secondary pt-1 active:scale-90 duration-150" href="Modelos2.html">
+<span class="material-symbols-outlined">minor_crash</span>
+<span class="font-label-sm text-[10px] uppercase">Modelos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary-fixed-variant hover:text-secondary-fixed transition-all active:scale-90 duration-150" href="Cotizaciones.html">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm text-[10px] uppercase">Cita</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary-fixed-variant hover:text-secondary-fixed transition-all active:scale-90 duration-150" href="Cotizaciones.html">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-[10px] uppercase">Perfil</span>
+</a>
+</nav>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const content = document.getElementById('drawer-content');
+            
+            if (drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                setTimeout(() => {
+                    content.classList.remove('-translate-x-full');
+                }, 10);
+            } else {
+                content.classList.add('-translate-x-full');
+                setTimeout(() => {
+                    drawer.classList.add('hidden');
+                }, 300);
+            }
+        }
+    </script>
+</body></html>
