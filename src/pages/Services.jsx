@@ -38,7 +38,6 @@ export default function Services() {
             <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" to="/">Inicio</Link>
             <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" to="/modelos">Modelos</Link>
             <Link className="font-label-md text-label-md uppercase tracking-widest text-secondary border-b border-secondary pb-1" to="/servicios">Servicios</Link>
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors" to="/">Nosotros</Link>
           </nav>
           <button 
             className="bg-secondary text-on-secondary px-8 py-3 font-label-md text-label-md uppercase tracking-widest hover:opacity-80 transition-all duration-300 active:scale-95 cursor-pointer"
@@ -180,8 +179,8 @@ export default function Services() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-primary dark:bg-black border-t border-secondary/20">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-padding max-w-container-max mx-auto">
+      <footer className="bg-primary dark:bg-black border-t border-secondary/20 relative overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-padding max-w-container-max mx-auto relative z-10">
           <div className="md:col-span-1">
             <div className="font-headline-xl text-headline-xl text-secondary-fixed mb-6">CARLIZ</div>
             <p className="text-on-primary font-body-md opacity-60">Redefiniendo el servicio automotriz de lujo en cada detalle.</p>
@@ -213,8 +212,16 @@ export default function Services() {
             </div>
           </div>
         </div>
-        <div className="border-t border-white/10 py-8 text-center">
+        <div className="border-t border-white/10 py-8 text-center relative z-10">
           <p className="text-on-primary font-body-md opacity-40">© 2024 Carliz Automotive. Every Second Counts.</p>
+        </div>
+        {/* Background Decoration Watermark */}
+        <div className="absolute -bottom-24 -right-24 opacity-10 pointer-events-none z-0">
+          <img 
+            alt="" 
+            className="w-[600px] grayscale brightness-0 invert" 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"
+          />
         </div>
       </footer>
     </div>

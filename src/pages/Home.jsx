@@ -37,9 +37,6 @@ export default function Home() {
             <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/servicios">
               Servicios
             </Link>
-            <a className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" href="#testimonials">
-              Nosotros
-            </a>
           </div>
           <div>
             <button 
@@ -190,7 +187,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary dark:bg-black border-t border-secondary/20 pt-20 pb-10">
+      <footer className="bg-primary dark:bg-black border-t border-secondary/20 pt-20 pb-10 relative overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-padding max-w-container-max mx-auto">
           <div className="md:col-span-1">
             <span className="font-headline-xl text-headline-xl text-secondary-fixed mb-6 block">CARLIZ</span>
@@ -216,13 +213,6 @@ export default function Home() {
               <span className="material-symbols-outlined text-on-primary-container hover:text-secondary-fixed cursor-pointer">share</span>
               <span className="material-symbols-outlined text-on-primary-container hover:text-secondary-fixed cursor-pointer">language</span>
             </div>
-            <div className="absolute -bottom-24 -right-24 opacity-10">
-              <img 
-                alt="" 
-                className="w-[600px] grayscale brightness-0 invert" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"
-              />
-            </div>
           </div>
         </div>
         <div className="px-margin-desktop max-w-container-max mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:row justify-between items-center text-center">
@@ -235,6 +225,14 @@ export default function Home() {
             />
           </div>
         </div>
+      {/* Background Decoration Watermark */}
+      <div className="absolute -bottom-24 -right-24 opacity-10 pointer-events-none z-0">
+        <img 
+          alt="" 
+          className="w-[600px] grayscale brightness-0 invert" 
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"
+        />
+      </div>
       </footer>
     </div>
   );
