@@ -1,83 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-const modelsData = [
-  {
-    id: 'gt-spirit',
-    name: 'CARLIZ GT SPIRIT V12',
-    category: 'Coupé',
-    collection: 'Colección Heritage',
-    tag: 'Disponible',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBibmKew6jCewsB4rW08kMk7gKjv3DIYZlCWMLRXZU9cX5M-eqx4KPrLRiiu5mzB24loKDO27qLKRoB0tgE37iXwvXCg5uFKaZ3JHkRwR0rM35pzqbCUQ3cIspVUzCJb516OJB6S54HAvGqOS24ccCVaYEJV_zdymXaS0WAMksPLoimIfzg-eJlNrSMljtFF-nKIThbFFzBV0jTPv62LtUND5f_CYTkeMjbiyqP_9Pm3ncy5CcI2VoGgKUuABWJ8fQCyEoxHOGXCi3t',
-    price: '$345,000 USD',
-    specs: [
-      { label: 'Potencia', value: '720 HP' },
-      { label: '0-100 km/h', value: '2.9 s' },
-      { label: 'Transmisión', value: 'Dual-Clutch 8-Spd' },
-    ]
-  },
-  {
-    id: 'monza-evo',
-    name: 'CARLIZ MONZA EVO',
-    category: 'Coupé',
-    collection: 'Performance Series',
-    tag: 'Edición Limitada',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJMoT4LmoW0iv5ogKhLVC_KRbdB29VQnoYEY3GRlXC68msMVO54LW5UGP0fC7X8EtZfDJjBmcbvVMIU3XHOubSOjzSsHtzrH08QbOD7pXHz2fCQkf5y87w_2WIL8JVM7IUfSnWkRtXkYr_GJp4j0P7DTJomjbRlZeXoQmN-67Oa6k4xg2_1xHglX68LoHidIhXnFUxSaOHKMWSir3DlbKj5RpCG-RdhRY-JeLxxB6Ak3iOJ76zHKGsnBlqelnQgUSmkljW2ZI6P_tI',
-    price: '$580,000 USD',
-    specs: [
-      { label: 'Potencia', value: '815 HP' },
-      { label: 'V-Max', value: '350 km/h' },
-      { label: 'Peso', value: '1,450 kg' },
-    ]
-  },
-  {
-    id: 'horizon-x',
-    name: 'CARLIZ HORIZON X',
-    category: 'SUV Luxury',
-    collection: 'Grand SUV',
-    tag: 'Pre-Orden',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAtJ09P0nLquIkgrzzAWLTwk3SBmS5ybBGyDIS6KSHaB5qSNBiDYwmh0hHM6W_oAOiRmLy12DaWifRDO5TZJqjgRovLHwR2JRW8Sh3PAo5bibREehN21tbKfmycowvViMTePvuqdvr-kSC6U5UalfCNFgLBjNFxnBg1t4p8EiqBHCoo6FmlCYshZ2BXTHnmGGLbe6s7YtlEx3xAJIFxA9cRkT0x28qc--QwN912nxC3qH-GpEvzThSfmqug3wFq_P31RMRpJn-hNal0',
-    price: '$290,000 USD',
-    specs: [
-      { label: 'Tracción', value: 'AWD Smart' },
-      { label: 'Motor', value: 'V8 Hybrid' },
-      { label: 'Autonomía', value: '950 km' },
-    ]
-  },
-  {
-    id: 'phantom-road',
-    name: 'CARLIZ PHANTOM ROAD V8',
-    category: 'Sedán',
-    collection: 'Colección Executive',
-    tag: 'Diseño VIP',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD9i3lNrUBAyNCLmE9vLujuSFCi6Mn3fKTXLeDTeb7ovLvY7axMC8ovTHm-gsVIi1n0hAqZ6oPlrxjdPTL27C5AiSQ7szKORJh11NCtMHW1g-nz0lqNk7tLWoRXxzwZMk9c28p8PxulSVUIRwqoiZTYSNeRhutO-1ULN7lQHs79gjmAIym4v-n3Qitr9AYC3yCVuP9Txc_ZVdZDvD83c_EHS_fYWgKAkyByEGTyZUkEfJlW91FkEStGmK7z0O257vLkeONbFNNYy8tw',
-    price: '$240,000 USD',
-    specs: [
-      { label: 'Potencia', value: '610 HP' },
-      { label: '0-100 km/h', value: '3.5 s' },
-      { label: 'Transmisión', value: 'Auto 9-Spd' },
-    ]
-  },
-  {
-    id: 'heritage-67',
-    name: 'CARLIZ HERITAGE 1967',
-    category: 'Clásicos',
-    collection: 'Colección Privada',
-    tag: 'Clásico Único',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBiuXIampK-VMFDQs-EyoSwwY_VmEjLdR6eVvYXYkGaKkrzGyMTwMONw1uENHMSE_qiN08S2aXtvlA-esiAwms0uuqEI3gvnFM6Qa4x9IBPuUMFV7XEHc0kUJMMp_gJYH2uM6eBJcOd5uWmEvSl7ezssuY2aZGmoJpMKDX-z_qvwHmEX2WztaXbcsustPKcZTG7YKHLZdMiMb5bz_ZDp3qHNfXZZOVt0-_1OARKg5vtXCMo6ZOUyPSXp37n6G2y70OiCxwn6SzkyC-K',
-    price: '$420,000 USD',
-    specs: [
-      { label: 'Potencia', value: '380 HP' },
-      { label: 'Restauración', value: '100% Original' },
-      { label: 'Transmisión', value: 'Manual 5-Spd' },
-    ]
-  }
-];
-
+import api from '../services/api';
 export default function Models() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,9 +20,108 @@ export default function Models() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        // Fetch models and brands in parallel
+        const [modelsResponse, brandsResponse] = await Promise.all([
+          api.get('/models'),
+          api.get('/brands')
+        ]);
+
+        const modelsList = modelsResponse.data?.success ? modelsResponse.data.data : [];
+        const brandsList = brandsResponse.data?.success ? brandsResponse.data.data : [];
+
+        // Build a brand lookup map
+        const brandMap = {};
+        brandsList.forEach(b => {
+          brandMap[b.id_brand] = b;
+        });
+
+        // For each model, fetch available vehicle and images
+        const fullModels = await Promise.all(modelsList.map(async (m) => {
+          let vehicle = null;
+          let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800'; // Default fallback
+          let price = 'Consultar precio';
+          let tag = 'Disponible';
+
+          try {
+            // Fetch available vehicle for this model
+            const vehicleRes = await api.get(`/vehicles/available/${m.id_model}`);
+            if (vehicleRes.data && vehicleRes.data.success && vehicleRes.data.data) {
+              vehicle = vehicleRes.data.data;
+              price = `$${Number(vehicle.sale_price).toLocaleString('en-US')}.00 USD`;
+              tag = vehicle.status === 'available' ? 'Disponible' : vehicle.status;
+
+              // Fetch image for this specific vehicle
+              const imageRes = await api.get(`/vehicle-images?id_vehicle=${vehicle.id_vehicle}`);
+              if (imageRes.data && imageRes.data.success && imageRes.data.data.length > 0) {
+                const primaryImage = imageRes.data.data.find(img => img.is_primary) || imageRes.data.data[0];
+                if (primaryImage?.url) {
+                  image = primaryImage.url;
+                }
+              }
+            }
+          } catch (vErr) {
+            console.error(`Error fetching vehicle details for model ${m.name}:`, vErr);
+          }
+
+          // Format category based on body_type
+          let category = 'Otros';
+          const bt = (m.body_type || '').toLowerCase();
+          if (bt === 'coupe') category = 'Coupé';
+          else if (bt === 'sedan') category = 'Sedán';
+          else if (bt === 'suv') category = 'SUV Luxury';
+          else if (bt === 'clasicos' || bt === 'clásicos') category = 'Clásicos';
+          else if (bt) category = bt.charAt(0).toUpperCase() + bt.slice(1);
+
+          // Get collection (brand name)
+          const brand = brandMap[m.id_brand];
+          const collection = brand ? brand.name : 'Colección Premium';
+
+          // Format specs
+          const specs = [];
+          const ft = (m.fuel_type || '').toLowerCase();
+          const fuelValue = ft === 'hybrid' ? 'Híbrido' : ft === 'electric' ? 'Eléctrico' : ft === 'gasoline' ? 'Gasolina' : ft === 'diesel' ? 'Diésel' : ft;
+          if (fuelValue) specs.push({ label: 'Combustible', value: fuelValue });
+
+          const trans = (m.transmission || '').toLowerCase();
+          const transValue = trans === 'automatic' ? 'Automático' : trans === 'manual' ? 'Manual' : trans;
+          if (transValue) specs.push({ label: 'Transmisión', value: transValue });
+
+          if (vehicle) {
+            if (vehicle.year) specs.push({ label: 'Año', value: vehicle.year.toString() });
+            if (vehicle.color) specs.push({ label: 'Color', value: vehicle.color });
+            if (vehicle.mileage !== undefined) specs.push({ label: 'Kilometraje', value: `${vehicle.mileage} km` });
+          }
+
+          return {
+            id: `model-${m.id_model}`,
+            id_model: m.id_model,
+            name: m.name,
+            category,
+            collection,
+            tag,
+            image,
+            price,
+            specs
+          };
+        }));
+
+        setModels(fullModels);
+      } catch (err) {
+        console.error("Error loading models from backend database:", err);
+        setModels([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchModels();
+  }, []);
+
   const filteredModels = activeFilter === 'Todos'
-    ? modelsData
-    : modelsData.filter(model => model.category === activeFilter);
+    ? models
+    : models.filter(model => model.category === activeFilter);
 
   return (
     <div className="bg-background text-on-background font-body-md selection:bg-secondary selection:text-white min-h-screen">
@@ -184,7 +212,13 @@ export default function Models() {
         {/* Catalog Vertical List */}
         <section className="px-margin-mobile md:px-margin-desktop py-16 bg-surface">
           <div className="max-w-7xl mx-auto space-y-16">
-            {filteredModels.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-20 bg-white border border-outline-variant/20 rounded-lg flex flex-col items-center justify-center">
+                <span className="material-symbols-outlined text-6xl text-secondary animate-spin mb-4 font-bold">progress_activity</span>
+                <h3 className="font-headline-lg text-headline-lg text-primary mb-2">Cargando Catálogo</h3>
+                <p className="font-body-md text-on-surface-variant">Conectando con el concesionario...</p>
+              </div>
+            ) : filteredModels.length > 0 ? (
               filteredModels.map((model, index) => (
                 <article
                   key={model.id}

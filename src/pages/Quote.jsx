@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
-const vehiclesList = [
-  { id: 1, name: 'CARLIZ GT SPIRIT V12', price: 345000 },
-  { id: 2, name: 'CARLIZ MONZA EVO', price: 580000 },
-  { id: 3, name: 'CARLIZ HORIZON X', price: 290000 },
-  { id: 4, name: 'CARLIZ PHANTOM ROAD V8', price: 240000 },
-  { id: 5, name: 'CARLIZ HERITAGE 1967', price: 420000 }
-];
+import api from '../services/api';
 
 export default function Quote() {
   const navigate = useNavigate();
   const location = useLocation();
   const [submitStatus, setSubmitStatus] = useState('idle'); // idle | processing | success
   const [scrollY, setScrollY] = useState(0);
+  const [vehicles, setVehicles] = useState([]);
+  const [financingPlans, setFinancingPlans] = useState([]);
+  const [selectedPlanId, setSelectedPlanId] = useState('none');
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -22,6 +18,47 @@ export default function Quote() {
     mensaje: ''
   });
   const [generatedQuote, setGeneratedQuote] = useState(null);
+
+  useEffect(() => {
+    const fetchVehiclesAndPlans = async () => {
+      try {
+        const response = await api.get('/models');
+        if (response.data && response.data.success) {
+          const mapped = await Promise.all(response.data.data.map(async m => {
+            let price = 250000; // default/fallback price
+            try {
+              const vehicleResponse = await api.get(`/vehicles/available/${m.id_model}`);
+              if (vehicleResponse.data && vehicleResponse.data.success && vehicleResponse.data.data) {
+                price = parseFloat(vehicleResponse.data.data.sale_price);
+              }
+            } catch (vErr) {
+              console.error(`Error loading vehicle for model ${m.name}:`, vErr);
+            }
+            return {
+              id: m.id_model,
+              name: m.name,
+              price: price
+            };
+          }));
+          if (mapped.length > 0) {
+            setVehicles(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading vehicles for quote dropdown:", err);
+      }
+
+      try {
+        const response = await api.get('/financing-plans');
+        if (response.data && response.data.success && response.data.data.length > 0) {
+          setFinancingPlans(response.data.data);
+        }
+      } catch (err) {
+        console.error("Error loading financing plans for dropdown:", err);
+      }
+    };
+    fetchVehiclesAndPlans();
+  }, []);
 
   useEffect(() => {
     // Check if a model was passed from the models page
@@ -65,7 +102,19 @@ export default function Quote() {
     }));
   };
 
-  const selectedVehicle = vehiclesList.find(v => v.name === formData.modelo);
+  const selectedVehicle = vehicles.find(v => v.name === formData.modelo);
+
+  const selectedPlanDetails = financingPlans.find(p => p.id_financing_plan.toString() === selectedPlanId);
+  const calculatedPayment = selectedVehicle && selectedPlanDetails 
+    ? (() => {
+        const p = selectedVehicle.price;
+        const r = parseFloat(selectedPlanDetails.interest_rate);
+        const n = selectedPlanDetails.number_installments;
+        const i = (r / 100) / 12;
+        if (i === 0) return p / n;
+        return p * (i * Math.pow(1 + i, n)) / (Math.pow(1 + i, n) - 1);
+      })()
+    : 0;
 
   const getValidityDate = () => {
     const today = new Date();
@@ -91,7 +140,7 @@ export default function Quote() {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitStatus !== 'idle') return;
     if (formData.modelo === 'Seleccione un modelo') {
@@ -101,28 +150,76 @@ export default function Quote() {
 
     setSubmitStatus('processing');
 
-    setTimeout(() => {
+    try {
+      // 1. Registrar el cliente en la base de datos
+      const nameParts = formData.nombre.trim().split(' ');
+      const firstName = nameParts[0] || 'Cliente';
+      const lastName = nameParts.slice(1).join(' ') || 'Registrado';
+
+      const customerResponse = await api.post('/customers', {
+        first_name: firstName,
+        last_name: lastName,
+        document: `CLI-${Math.floor(100000 + Math.random() * 900000)}`,
+        phone: formData.telefono,
+        email: formData.email,
+        address: 'Registro desde Website'
+      });
+
+      const customer = customerResponse.data.data;
+      const customerId = customer.id_customer;
+
+      // 1.5. Obtener un vehículo disponible para el modelo seleccionado
+      let vehicleId = null;
+      try {
+        const vehicleResponse = await api.get(`/vehicles/available/${selectedVehicle.id}`);
+        if (vehicleResponse.data && vehicleResponse.data.success) {
+          vehicleId = vehicleResponse.data.data.id_vehicle;
+        }
+      } catch (vehicleErr) {
+        console.error("Error fetching available vehicle:", vehicleErr);
+        throw new Error("No hay vehículos físicos disponibles en stock para cotizar este modelo en este momento.");
+      }
+
+      // 2. Registrar la cotización en la base de datos
       const now = new Date();
       const validityDate = getValidityDate();
-      
-      // Simulate saving quote records mapping to db columns
+
+      const quoteResponse = await api.post('/quotes', {
+        date: now.toISOString(),
+        estimated_price: selectedVehicle.price,
+        validity_date: validityDate.toISOString(),
+        id_vehicle: vehicleId,
+        id_customer: customerId
+      });
+
+      const quote = quoteResponse.data.data;
+
+      // 3. Formatear la cotización real para el ticket de éxito
       const quoteRecord = {
-        id_coti: Math.floor(1000 + Math.random() * 9000), // Auto-incremental primary key
-        fecha: formatDateTimeToSQL(now),
-        precio_estimado: `$${selectedVehicle.price.toLocaleString('en-US')}.00 USD`,
-        vigencia: formatDateToSQL(validityDate),
-        estado: 'pendiente', // enum default
+        id_coti: quote.id_quote,
+        fecha: formatDateTimeToSQL(new Date(quote.date)),
+        precio_estimado: `$${parseFloat(quote.estimated_price).toLocaleString('en-US')}.00 USD`,
+        vigencia: formatDateToSQL(new Date(quote.validity_date)),
+        estado: 'pendiente',
         id_vehi: selectedVehicle.id,
         vehi_name: selectedVehicle.name,
-        id_clien: Math.floor(100 + Math.random() * 900), // FK to client
-        clien_name: formData.nombre,
+        id_clien: customerId,
+        clien_name: `${customer.first_name} ${customer.last_name}`.trim(),
         fecha_creacion: formatDateTimeToSQL(now),
-        fecha_actualizacion: formatDateTimeToSQL(now)
+        fecha_actualizacion: formatDateTimeToSQL(now),
+        // Detalles de Financiamiento para la interfaz del ticket
+        financing_plan_name: selectedPlanDetails ? selectedPlanDetails.name : 'Pago al Contado',
+        monthly_payment: selectedPlanDetails ? calculatedPayment : 0,
+        installments: selectedPlanDetails ? selectedPlanDetails.number_installments : 0
       };
 
       setGeneratedQuote(quoteRecord);
       setSubmitStatus('success');
-    }, 1500);
+    } catch (err) {
+      console.error("Error creating quote:", err);
+      alert("Ocurrió un error al enviar tu cotización: " + err.message);
+      setSubmitStatus('idle');
+    }
   };
 
   // If successfully submitted, render the premium DB record ticket
@@ -191,6 +288,14 @@ export default function Quote() {
                   <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">id_clien (FK -{'>'} cliente.id_clien)</span>
                   <span className="font-mono font-semibold text-primary">ID #{generatedQuote.id_clien} ({generatedQuote.clien_name})</span>
                 </div>
+                {generatedQuote.installments > 0 && (
+                  <div>
+                    <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">Financiamiento ({generatedQuote.financing_plan_name})</span>
+                    <span className="font-mono font-bold text-secondary text-base">
+                      ${generatedQuote.monthly_payment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD / mes
+                    </span>
+                  </div>
+                )}
                 <div>
                   <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">Auditoría Automática</span>
                   <div className="font-mono text-xs space-y-1 text-on-surface-variant/80">
@@ -332,20 +437,58 @@ export default function Quote() {
                     required
                   >
                     <option disabled value="Seleccione un modelo">Seleccione un modelo</option>
-                    {vehiclesList.map(v => (
+                    {vehicles.map(v => (
                       <option key={v.id} value={v.name}>{v.name}</option>
                     ))}
                   </select>
                 </div>
 
                 {selectedVehicle && (
-                  <div className="bg-surface-container-low p-4 rounded-lg border border-outline-variant/30 mt-4 animate-fade-in flex justify-between items-center">
-                    <span className="font-label-md text-xs uppercase tracking-widest text-on-surface-variant/80 font-bold">
-                      precio_estimado:
-                    </span>
-                    <span className="font-headline-lg text-lg text-secondary font-bold">
-                      ${selectedVehicle.price.toLocaleString('en-US')}.00 USD
-                    </span>
+                  <div className="space-y-6 mt-6 animate-fade-in">
+                    <div className="bg-surface-container-low p-4 rounded-lg border border-outline-variant/30 flex justify-between items-center">
+                      <span className="font-label-md text-xs uppercase tracking-widest text-on-surface-variant/80 font-bold">
+                        precio_estimado:
+                      </span>
+                      <span className="font-headline-lg text-lg text-secondary font-bold">
+                        ${selectedVehicle.price.toLocaleString('en-US')}.00 USD
+                      </span>
+                    </div>
+
+                    <div className="form-underline group">
+                      <label className="block font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-1 group-focus-within:text-secondary transition-colors" htmlFor="planFinanciamiento">Plan de Financiamiento (Opcional)</label>
+                      <select 
+                        className="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 font-body-lg text-body-lg appearance-none cursor-pointer" 
+                        id="planFinanciamiento" 
+                        value={selectedPlanId}
+                        onChange={(e) => setSelectedPlanId(e.target.value)}
+                      >
+                        <option value="none">Pago al Contado (Sin Financiamiento)</option>
+                        {financingPlans.map(p => (
+                          <option key={p.id_financing_plan} value={p.id_financing_plan}>
+                            {p.name} ({p.number_installments} meses @ {p.interest_rate}%)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedPlanId !== 'none' && selectedPlanDetails && (
+                      <div className="bg-secondary/5 p-5 rounded-lg border border-secondary/20 space-y-4">
+                        <div className="flex justify-between items-center text-sm border-b border-outline-variant/20 pb-2">
+                          <span className="text-on-surface-variant font-medium">Plazo de Financiamiento:</span>
+                          <span className="font-mono font-bold text-primary">{selectedPlanDetails.number_installments} Meses</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm border-b border-outline-variant/20 pb-2">
+                          <span className="text-on-surface-variant font-medium">Tasa de Interés Anual (APR):</span>
+                          <span className="font-mono font-bold text-primary">{selectedPlanDetails.interest_rate}%</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2">
+                          <span className="font-label-md text-xs uppercase tracking-widest text-secondary font-bold">Mensualidad Estimada:</span>
+                          <span className="font-headline-lg text-xl text-secondary font-bold">
+                            ${calculatedPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
