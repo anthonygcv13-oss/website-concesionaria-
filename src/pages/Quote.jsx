@@ -205,6 +205,8 @@ export default function Quote() {
         vehi_name: selectedVehicle.name,
         id_clien: customerId,
         clien_name: `${customer.first_name} ${customer.last_name}`.trim(),
+        clien_email: formData.email,
+        clien_telefono: formData.telefono,
         fecha_creacion: formatDateTimeToSQL(now),
         fecha_actualizacion: formatDateTimeToSQL(now),
         // Detalles de Financiamiento para la interfaz del ticket
@@ -222,8 +224,18 @@ export default function Quote() {
     }
   };
 
-  // If successfully submitted, render the premium DB record ticket
+  // If successfully submitted, render the premium luxury certificate ticket
   if (submitStatus === 'success' && generatedQuote) {
+    const formatDateFriendly = (dateStr) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr.replace(/-/g, '/'));
+      return date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    };
+
     return (
       <div className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
         {/* TopNavBar */}
@@ -252,70 +264,134 @@ export default function Quote() {
         </nav>
 
         <main className="min-h-screen pt-28 pb-16 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-white border border-outline-variant/30 rounded-lg shadow-2xl p-8 space-y-8 animate-fade-in">
+          <div className="max-w-2xl w-full bg-white border border-outline-variant/20 rounded-xl shadow-2xl p-8 space-y-8 animate-fade-in">
             {/* Header */}
-            <div className="text-center space-y-2 border-b border-outline-variant/20 pb-6">
-              <span className="material-symbols-outlined text-green-600 text-5xl">check_circle</span>
-              <h1 className="font-headline-xl text-headline-xl text-primary">Cotización Registrada</h1>
-              <p className="text-body-md text-on-surface-variant">La solicitud de cotización se ha registrado con éxito en la base de datos.</p>
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary/10 text-secondary mb-2">
+                <span className="material-symbols-outlined text-4xl">check_circle</span>
+              </div>
+              <h1 className="font-headline-xl text-headline-xl text-primary leading-tight">Cotización Confirmada</h1>
+              <p className="text-body-md text-on-surface-variant max-w-md mx-auto">
+                Su solicitud ha sido procesada con éxito. Un asesor comercial especializado se comunicará con usted en breve.
+              </p>
             </div>
 
-            {/* Simulated Database Records Card */}
-            <div className="bg-surface p-6 rounded-lg border border-outline-variant/20 space-y-6">
-              <div className="flex items-center justify-between border-b border-outline-variant/10 pb-3">
-                <h3 className="font-label-md text-xs uppercase tracking-widest text-secondary font-bold">
-                  Registro de Base de Datos: `cotizacion`
-                </h3>
-                <span className="font-mono text-xs bg-secondary/10 text-secondary px-2.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                  Tabla: cotizacion
-                </span>
+            {/* Premium Digital Certificate Card */}
+            <div className="relative bg-surface p-8 rounded-xl border border-outline-variant/30 shadow-md space-y-6 overflow-hidden">
+              {/* Gold line decoration */}
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-secondary/40 via-secondary to-secondary/40"></div>
+              
+              {/* Certificate Header */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-outline-variant/20 pb-4 gap-2">
+                <div>
+                  <span className="font-headline-lg text-lg text-primary tracking-tighter font-semibold">CARLIZ</span>
+                  <span className="text-[10px] uppercase tracking-widest text-secondary block font-bold mt-0.5">Automotive</span>
+                </div>
+                <div className="text-left sm:text-right">
+                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Nº de Cotización</span>
+                  <span className="font-mono font-bold text-primary text-base">CZ-{String(generatedQuote.id_coti).padStart(4, '0')}</span>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-body-md text-sm">
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">id_coti (PK, Auto-increment)</span>
-                  <span className="font-mono font-bold text-primary text-base">#{generatedQuote.id_coti}</span>
+              {/* Information Grid */}
+              <div className="space-y-6">
+                {/* Section: Client & Vehicle Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-outline-variant/10 pb-6">
+                  <div className="space-y-4">
+                    <h3 className="font-label-md text-xs uppercase tracking-widest text-secondary font-bold">Información del Cliente</h3>
+                    <div>
+                      <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Nombre Completo</span>
+                      <span className="font-body-md font-semibold text-primary">{generatedQuote.clien_name}</span>
+                    </div>
+                    {generatedQuote.clien_email && (
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Correo Electrónico</span>
+                        <span className="font-body-md text-on-surface-variant break-all">{generatedQuote.clien_email}</span>
+                      </div>
+                    )}
+                    {generatedQuote.clien_telefono && (
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Teléfono de Contacto</span>
+                        <span className="font-body-md text-on-surface-variant">{generatedQuote.clien_telefono}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-label-md text-xs uppercase tracking-widest text-secondary font-bold">Detalles de la Propuesta</h3>
+                    <div>
+                      <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Modelo Seleccionado</span>
+                      <span className="font-body-md font-semibold text-primary">{generatedQuote.vehi_name}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Precio de Lista Estimado</span>
+                      <span className="font-body-md font-bold text-primary text-base">{generatedQuote.precio_estimado}</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">fecha (DATETIME)</span>
-                  <span className="font-mono font-semibold text-primary">{generatedQuote.fecha}</span>
+
+                {/* Section: Financing or Cash Details */}
+                <div className="bg-white p-5 rounded-lg border border-outline-variant/20 space-y-4">
+                  <h3 className="font-label-md text-xs uppercase tracking-widest text-secondary font-bold">Método de Adquisición</h3>
+                  {generatedQuote.installments > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Plan de Financiamiento</span>
+                        <span className="font-body-md font-semibold text-primary">{generatedQuote.financing_plan_name}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Mensualidad Estimada</span>
+                        <span className="font-body-md font-bold text-secondary text-base">
+                          ${generatedQuote.monthly_payment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD / mes
+                        </span>
+                        <span className="block text-[10px] text-on-surface-variant/80 mt-0.5">Plazo: {generatedQuote.installments} meses</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Modalidad</span>
+                      <span className="font-body-md font-semibold text-primary">Pago al Contado (Sin Financiamiento)</span>
+                      <p className="text-xs text-on-surface-variant/80 mt-1">
+                        Se aplicarán los términos de pago directo acordados con su asesor financiero.
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">precio_estimado (DECIMAL)</span>
-                  <span className="font-mono font-bold text-secondary text-base">{generatedQuote.precio_estimado}</span>
-                </div>
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">id_clien (FK -{'>'} cliente.id_clien)</span>
-                  <span className="font-mono font-semibold text-primary">ID #{generatedQuote.id_clien} ({generatedQuote.clien_name})</span>
-                </div>
-                {generatedQuote.installments > 0 && (
+
+                {/* Section: Dates & Terms */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">Financiamiento ({generatedQuote.financing_plan_name})</span>
-                    <span className="font-mono font-bold text-secondary text-base">
-                      ${generatedQuote.monthly_payment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD / mes
-                    </span>
+                    <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Fecha de Emisión</span>
+                    <span className="font-mono text-xs text-on-surface-variant">{formatDateFriendly(generatedQuote.fecha)}</span>
                   </div>
-                )}
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1 font-bold">Auditoría Automática</span>
-                  <div className="font-mono text-xs space-y-1 text-on-surface-variant/80">
-                    <p>creacion: <code className="bg-surface-container px-1 rounded">{generatedQuote.fecha_creacion}</code></p>
-                    <p>actualizacion: <code className="bg-surface-container px-1 rounded">{generatedQuote.fecha_actualizacion}</code></p>
+                  <div>
+                    <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-semibold">Vigencia de la Oferta</span>
+                    <span className="font-mono text-xs text-secondary font-semibold">{formatDateFriendly(generatedQuote.vigencia)}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Certificate Footer */}
+              <div className="border-t border-outline-variant/20 pt-6 text-center space-y-2">
+                <p className="font-label-md text-[10px] uppercase tracking-[0.25em] text-secondary font-bold">
+                  CARLIZ AUTOMOTIVE • EVERY SECOND COUNTS
+                </p>
+                <p className="text-[10px] text-on-surface-variant/60 leading-normal max-w-md mx-auto">
+                  Este certificado digital es de carácter informativo. Los precios finales, disponibilidad de stock y términos crediticios finales están sujetos a la firma del contrato definitivo en sucursal.
+                </p>
               </div>
             </div>
 
             {/* Back Buttons */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <button 
-                className="w-1/2 border border-primary text-primary hover:bg-primary/5 py-4 font-label-md text-xs uppercase tracking-widest transition-all rounded cursor-pointer"
+                className="w-full sm:w-1/2 border border-primary text-primary hover:bg-primary/5 py-4 font-label-md text-xs uppercase tracking-widest transition-all rounded cursor-pointer"
                 onClick={() => navigate('/modelos')}
               >
                 Volver a Catálogo
               </button>
               <button 
-                className="w-1/2 bg-primary text-secondary hover:bg-secondary hover:text-primary py-4 font-label-md text-xs uppercase tracking-widest transition-all rounded cursor-pointer"
+                className="w-full sm:w-1/2 bg-primary text-secondary hover:bg-secondary hover:text-primary py-4 font-label-md text-xs uppercase tracking-widest transition-all rounded cursor-pointer"
                 onClick={() => {
                   setSubmitStatus('idle');
                   setGeneratedQuote(null);
