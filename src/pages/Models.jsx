@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import api from '../services/api';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 export default function Models() {
   const navigate = useNavigate();
-  const [isScrolled, setIsScrolled] = useState(false);
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -16,61 +18,32 @@ export default function Models() {
   });
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    const controller = new AbortController();
 
-  useEffect(() => {
     const fetchModels = async () => {
       try {
-        // Fetch models and brands in parallel
-        const [modelsResponse, brandsResponse] = await Promise.all([
-          api.get('/models'),
-          api.get('/brands')
-        ]);
+        const response = await api.get('/models', { signal: controller.signal });
+        const modelsList = response.data?.success ? response.data.data : [];
 
-        const modelsList = modelsResponse.data?.success ? modelsResponse.data.data : [];
-        const brandsList = brandsResponse.data?.success ? brandsResponse.data.data : [];
+        const fullModels = modelsList.map((m) => {
+          // Get first available vehicle
+          const vehicle = m.vehicles && m.vehicles.length > 0 ? m.vehicles[0] : null;
 
-        // Build a brand lookup map
-        const brandMap = {};
-        brandsList.forEach(b => {
-          brandMap[b.id_brand] = b;
-        });
-
-        // For each model, fetch available vehicle and images
-        const fullModels = await Promise.all(modelsList.map(async (m) => {
-          let vehicle = null;
           let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800'; // Default fallback
           let price = 'Consultar precio';
           let tag = 'Disponible';
 
-          try {
-            // Fetch available vehicle for this model
-            const vehicleRes = await api.get(`/vehicles/available/${m.id_model}`);
-            if (vehicleRes.data && vehicleRes.data.success && vehicleRes.data.data) {
-              vehicle = vehicleRes.data.data;
-              price = `$${Number(vehicle.sale_price).toLocaleString('en-US')}.00 USD`;
-              tag = vehicle.status === 'available' ? 'Disponible' : vehicle.status;
+          if (vehicle) {
+            price = `$${Number(vehicle.sale_price).toLocaleString('en-US')}.00 USD`;
+            tag = vehicle.status === 'available' ? 'Disponible' : vehicle.status;
 
-              // Fetch image for this specific vehicle
-              const imageRes = await api.get(`/vehicle-images?id_vehicle=${vehicle.id_vehicle}`);
-              if (imageRes.data && imageRes.data.success && imageRes.data.data.length > 0) {
-                const primaryImage = imageRes.data.data.find(img => img.is_primary) || imageRes.data.data[0];
-                if (primaryImage?.url) {
-                  image = primaryImage.url;
-                }
+            // Get primary image or the first image
+            if (vehicle.images && vehicle.images.length > 0) {
+              const primaryImage = vehicle.images.find(img => img.is_primary) || vehicle.images[0];
+              if (primaryImage?.url) {
+                image = primaryImage.url;
               }
             }
-          } catch (vErr) {
-            console.error(`Error fetching vehicle details for model ${m.name}:`, vErr);
           }
 
           // Format category based on body_type
@@ -82,9 +55,8 @@ export default function Models() {
           else if (bt === 'clasicos' || bt === 'clásicos') category = 'Clásicos';
           else if (bt) category = bt.charAt(0).toUpperCase() + bt.slice(1);
 
-          // Get collection (brand name)
-          const brand = brandMap[m.id_brand];
-          const collection = brand ? brand.name : 'Colección Premium';
+          // Get brand name from the joined object
+          const collection = m.brand ? m.brand.name : 'Colección Premium';
 
           // Format specs
           const specs = [];
@@ -117,17 +89,26 @@ export default function Models() {
             year: vehicle?.year ? vehicle.year.toString() : '',
             color: vehicle?.color || ''
           };
-        }));
+        });
 
         setModels(fullModels);
       } catch (err) {
+        if (axios.isCancel(err)) {
+          return; // Silent ignore cancellation
+        }
         console.error("Error loading models from backend database:", err);
         setModels([]);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     fetchModels();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const uniqueBrands = ['Todas', ...new Set(models.map(m => m.collection).filter(Boolean))];
@@ -174,40 +155,12 @@ export default function Models() {
 
   return (
     <div className="bg-background text-on-background font-body-md selection:bg-secondary selection:text-white min-h-screen">
-      {/* Top Navigation Bar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 bg-surface/90 dark:bg-primary/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm transition-all duration-300 ${isScrolled ? 'h-16 py-2' : 'h-20'}`}>
-        <div className="flex justify-between items-center h-full px-margin-desktop max-w-container-max mx-auto w-full">
-          <div className="flex items-center">
-            <Link to="/" className="font-headline-lg text-headline-lg text-primary dark:text-white tracking-tighter">
-              CARLIZ
-            </Link>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/">
-              Inicio
-            </Link>
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-secondary border-b border-secondary pb-1" to="/modelos">
-              Modelos
-            </Link>
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/servicios">
-              Servicios
-            </Link>
-          </div>
-          <div>
-            <button 
-              className="bg-secondary text-on-secondary px-8 py-3 rounded-DEFAULT font-label-md text-label-md uppercase tracking-widest hover:opacity-80 transition-all duration-300 active:scale-95 cursor-pointer"
-              onClick={() => navigate('/cotizar')}
-            >
-              Cotizar
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="pt-20 pb-20 md:pb-0">
         {/* Hero Section / Title - Redesigned to premium dark mode with glows */}
         {/* Hero Section / Title - Redesigned to premium dark mode with background image */}
-        <section className="relative h-[520px] flex items-center justify-center overflow-hidden bg-primary border-b border-secondary/20">
+        <section className="relative h-[320px] md:h-[520px] flex items-center justify-center overflow-hidden bg-primary border-b border-secondary/20">
           <div className="absolute inset-0 z-0 opacity-40">
             <img 
               alt="Sleek luxury sports car" 
@@ -470,58 +423,8 @@ export default function Models() {
           </div>
         </section>
 
-        {/* Call to Action */}
-        <section className="py-20 bg-primary text-on-primary relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop text-center relative z-10">
-            <h3 className="font-headline-lg text-headline-lg mb-6">¿Busca algo Verdaderamente Único?</h3>
-            <p className="font-body-lg text-body-lg text-on-primary-container max-w-xl mx-auto mb-12 opacity-80">
-              Nuestro equipo de personalización puede dar vida a su visión más ambiciosa. Desde acabados en metales preciosos hasta tapicería artesanal exclusiva.
-            </p>
-            <div className="flex flex-col md:flex-row gap-6 justify-center">
-              <button
-                className="bg-secondary text-primary px-10 py-5 font-label-md text-xs uppercase tracking-widest hover:brightness-110 transition-all cursor-pointer rounded shadow-lg shadow-secondary/15"
-                onClick={() => navigate('/cotizar')}
-              >
-                Programar Cita Privada
-              </button>
-              <button
-                className="border border-secondary text-secondary px-10 py-5 font-label-md text-xs uppercase tracking-widest hover:bg-secondary/10 transition-all cursor-pointer rounded"
-                onClick={() => navigate('/servicios')}
-              >
-                Ver Servicios Tailor-Made
-              </button>
-            </div>
-          </div>
-          {/* Background Decoration */}
-          <div className="absolute -bottom-24 -right-24 opacity-10">
-            <img
-              alt=""
-              className="w-[600px] grayscale brightness-0 invert"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"
-            />
-          </div>
-        </section>
       </main>
-
-      {/* BottomNavBar Shell (Mobile) */}
-      <nav className="md:hidden fixed bottom-0 w-full h-16 z-50 flex justify-around items-center bg-primary border-t border-secondary shadow-lg">
-        <Link className="flex flex-col items-center justify-center text-on-primary-container hover:text-secondary-fixed transition-all active:scale-90 duration-150" to="/">
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-md text-[10px] uppercase tracking-wider">Inicio</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-secondary border-t-2 border-secondary pt-1 active:scale-90 duration-150" to="/modelos">
-          <span className="material-symbols-outlined">minor_crash</span>
-          <span className="font-label-md text-[10px] uppercase tracking-wider">Modelos</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-primary-container hover:text-secondary-fixed transition-all active:scale-90 duration-150" to="/cotizar">
-          <span className="material-symbols-outlined">event_available</span>
-          <span className="font-label-md text-[10px] uppercase tracking-wider">Cita</span>
-        </Link>
-        <Link className="flex flex-col items-center justify-center text-on-primary-container hover:text-secondary-fixed transition-all active:scale-90 duration-150" to="/cotizar">
-          <span className="material-symbols-outlined">person</span>
-          <span className="font-label-md text-[10px] uppercase tracking-wider">Perfil</span>
-        </Link>
-      </nav>
+      <Footer />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://car-dealership-03qc.onrender.com/api',
 });
 
 // Interceptor para inyectar automáticamente el token JWT si existe en localStorage

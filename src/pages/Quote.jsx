@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import api from '../services/api';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 export default function Quote() {
   const navigate = useNavigate();
@@ -20,44 +23,45 @@ export default function Quote() {
   const [generatedQuote, setGeneratedQuote] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchVehiclesAndPlans = async () => {
       try {
-        const response = await api.get('/models');
-        if (response.data && response.data.success) {
-          const mapped = await Promise.all(response.data.data.map(async m => {
-            let price = 250000; // default/fallback price
-            try {
-              const vehicleResponse = await api.get(`/vehicles/available/${m.id_model}`);
-              if (vehicleResponse.data && vehicleResponse.data.success && vehicleResponse.data.data) {
-                price = parseFloat(vehicleResponse.data.data.sale_price);
-              }
-            } catch (vErr) {
-              console.error(`Error loading vehicle for model ${m.name}:`, vErr);
-            }
+        const [modelsRes, plansRes] = await Promise.all([
+          api.get('/models', { signal: controller.signal }),
+          api.get('/financing-plans', { signal: controller.signal })
+        ]);
+
+        if (modelsRes.data && modelsRes.data.success) {
+          const mapped = modelsRes.data.data.map(m => {
+            const vehicle = m.vehicles && m.vehicles.length > 0 ? m.vehicles[0] : null;
             return {
               id: m.id_model,
               name: m.name,
-              price: price
+              price: vehicle ? parseFloat(vehicle.sale_price) : 250000,
+              id_vehicle: vehicle ? vehicle.id_vehicle : null
             };
-          }));
+          });
           if (mapped.length > 0) {
             setVehicles(mapped);
           }
         }
-      } catch (err) {
-        console.error("Error loading vehicles for quote dropdown:", err);
-      }
 
-      try {
-        const response = await api.get('/financing-plans');
-        if (response.data && response.data.success && response.data.data.length > 0) {
-          setFinancingPlans(response.data.data);
+        if (plansRes.data && plansRes.data.success && plansRes.data.data.length > 0) {
+          setFinancingPlans(plansRes.data.data);
         }
       } catch (err) {
-        console.error("Error loading financing plans for dropdown:", err);
+        if (axios.isCancel(err)) {
+          return;
+        }
+        console.error("Error loading quote page data:", err);
       }
     };
     fetchVehiclesAndPlans();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -168,17 +172,11 @@ export default function Quote() {
       const customer = customerResponse.data.data;
       const customerId = customer.id_customer;
 
-      // 1.5. Obtener un vehículo disponible para el modelo seleccionado
-      let vehicleId = null;
-      try {
-        const vehicleResponse = await api.get(`/vehicles/available/${selectedVehicle.id}`);
-        if (vehicleResponse.data && vehicleResponse.data.success) {
-          vehicleId = vehicleResponse.data.data.id_vehicle;
-        }
-      } catch (vehicleErr) {
-        console.error("Error fetching available vehicle:", vehicleErr);
+      // 1.5. Obtener el vehículo disponible directamente de los datos cargados del modelo
+      if (!selectedVehicle || !selectedVehicle.id_vehicle) {
         throw new Error("No hay vehículos físicos disponibles en stock para cotizar este modelo en este momento.");
       }
+      const vehicleId = selectedVehicle.id_vehicle;
 
       // 2. Registrar la cotización en la base de datos
       const now = new Date();
@@ -238,33 +236,10 @@ export default function Quote() {
 
     return (
       <div className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
-        {/* TopNavBar */}
-        <nav className="bg-surface/90 dark:bg-primary/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm fixed w-full z-50 top-0">
-          <div className="flex justify-between items-center h-20 px-margin-desktop max-w-container-max mx-auto w-full">
-            <div 
-              className="font-headline-lg text-headline-lg text-primary dark:text-white tracking-tighter cursor-pointer" 
-              onClick={() => navigate('/')}
-            >
-              CARLIZ
-            </div>
-            <div className="hidden md:flex gap-10 items-center">
-              <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link>
-              <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/modelos">Modelos</Link>
-              <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/servicios">Servicios</Link>
-            </div>
-            <div className="flex items-center gap-6">
-              <button 
-                className="bg-secondary text-white px-8 py-3 font-label-md text-label-md uppercase tracking-widest hover:opacity-80 transition-all duration-300 active:scale-95 cursor-pointer"
-                onClick={() => navigate('/cotizar')}
-              >
-                Cotizar
-              </button>
-            </div>
-          </div>
-        </nav>
+        <Navbar />
 
         <main className="min-h-screen pt-28 pb-16 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-white border border-outline-variant/20 rounded-xl shadow-2xl p-8 space-y-8 animate-fade-in">
+          <div className="max-w-2xl w-full bg-white border border-outline-variant/20 rounded-xl shadow-2xl p-5 sm:p-8 space-y-8 animate-fade-in">
             {/* Header */}
             <div className="text-center space-y-3">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary/10 text-secondary mb-2">
@@ -277,7 +252,7 @@ export default function Quote() {
             </div>
 
             {/* Premium Digital Certificate Card */}
-            <div className="relative bg-surface p-8 rounded-xl border border-outline-variant/30 shadow-md space-y-6 overflow-hidden">
+            <div className="relative bg-surface p-4 sm:p-8 rounded-xl border border-outline-variant/30 shadow-md space-y-6 overflow-hidden">
               {/* Gold line decoration */}
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-secondary/40 via-secondary to-secondary/40"></div>
               
@@ -415,30 +390,7 @@ export default function Quote() {
 
   return (
     <div className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
-      {/* TopNavBar */}
-      <nav className="bg-surface/90 dark:bg-primary/85 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm fixed w-full z-50 top-0">
-        <div className="flex justify-between items-center h-20 px-margin-desktop max-w-container-max mx-auto w-full">
-          <div 
-            className="font-headline-lg text-headline-lg text-primary dark:text-white tracking-tighter cursor-pointer" 
-            onClick={() => navigate('/')}
-          >
-            CARLIZ
-          </div>
-          <div className="hidden md:flex gap-10 items-center">
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/">Inicio</Link>
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/modelos">Modelos</Link>
-            <Link className="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-white transition-colors" to="/servicios">Servicios</Link>
-          </div>
-          <div className="flex items-center gap-6">
-            <button 
-              className="bg-secondary text-white px-8 py-3 font-label-md text-label-md uppercase tracking-widest hover:opacity-80 transition-all duration-300 active:scale-95 cursor-pointer"
-              onClick={() => navigate('/cotizar')}
-            >
-              Cotizar
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content Canvas */}
       <main className="min-h-screen pt-20 flex items-center justify-center overflow-hidden">
@@ -452,7 +404,7 @@ export default function Quote() {
                   <span className="h-[1px] w-12 bg-secondary"></span>
                   <span className="font-label-md text-label-md uppercase tracking-[0.2em]">Exclusividad</span>
                 </div>
-                <h1 className="font-headline-xl text-headline-xl text-primary leading-tight">
+                <h1 className="font-headline-xl text-3xl sm:text-4xl md:text-headline-xl text-primary leading-tight">
                   Solicite su <span className="italic font-normal">Propuesta Personalizada</span>
                 </h1>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">
@@ -643,58 +595,7 @@ export default function Quote() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-primary dark:bg-black border-t border-secondary/20 relative overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-section-padding max-w-container-max mx-auto flex-wrap relative z-10">
-          <div className="col-span-1 md:col-span-1 space-y-6">
-            <div className="font-headline-xl text-headline-xl text-secondary-fixed">CARLIZ</div>
-            <p className="font-body-md text-body-md text-on-primary-container max-w-xs">
-              Definiendo el futuro de la movilidad de lujo a través de la precisión y el diseño atemporal.
-            </p>
-          </div>
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-label-md text-label-md text-white uppercase tracking-widest">Modelos</h4>
-            <ul className="space-y-3">
-              <li><Link className="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" to="/modelos">Modelos Exclusivos</Link></li>
-              <li><Link className="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" to="/servicios">Taller Especializado</Link></li>
-              <li><Link className="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" to="/cotizar">Financiamiento Premium</Link></li>
-            </ul>
-          </div>
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-label-md text-label-md text-white uppercase tracking-widest">Compañía</h4>
-            <ul className="space-y-3">
-              <li><Link className="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" to="/cotizar">Contacto</Link></li>
-              <li><Link className="font-body-md text-body-md text-on-primary-container hover:text-secondary-fixed transition-colors" to="/">Privacidad</Link></li>
-            </ul>
-          </div>
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-label-md text-label-md text-white uppercase tracking-widest">Sede</h4>
-            <p className="font-body-md text-body-md text-on-primary-container">
-              Av. de la Castellana, 280<br />Madrid, España
-            </p>
-            <div className="flex gap-4">
-              <span className="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">language</span>
-              <span className="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">share</span>
-              <span className="material-symbols-outlined text-secondary-fixed cursor-pointer hover:opacity-70">location_on</span>
-            </div>
-          </div>
-        </div>
-        <div className="px-margin-desktop py-8 border-t border-white/5 max-w-container-max mx-auto flex justify-between items-center relative z-10">
-          <span className="font-body-md text-body-md text-on-primary-container text-xs">© 2024 Carliz Automotive. Every Second Counts.</span>
-          <div className="flex gap-8">
-            <span className="font-label-md text-label-md text-secondary-fixed font-bold">ES</span>
-            <span className="font-label-md text-label-md text-on-primary-container">EN</span>
-          </div>
-        </div>
-        {/* Background Decoration Watermark */}
-        <div className="absolute -bottom-24 -right-24 opacity-10 pointer-events-none z-0">
-          <img 
-            alt="" 
-            className="w-[600px] grayscale brightness-0 invert" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC_yN1jBuvpUGf1u1s6tZ1zvLv17UnsJBIinvtML9MVYnGStWO12Oero9a08anXy8vfWXrlnjtbWSrqx4EVUa8sMGBFc-tfMv6NkiBCIlFv1IuvP5n5Zb-6_H_rjmsJ2pJ_EkBNJArXiuOEcpB1J4leIEW3-xMVBfPilRILkXxou55wZNu3ELFxDl_qWPORyQIFmhOCdI48irO4S0gJyVHfcKsj88w27W0txMEE8STCykp6peKGkR4ucwgse5EvHCRL1ctcdQujezw"
-          />
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
