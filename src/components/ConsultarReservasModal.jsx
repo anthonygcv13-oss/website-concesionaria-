@@ -26,82 +26,19 @@ export default function ConsultarReservasModal({ isOpen, onClose }) {
     setSearchedEmail(email.trim());
 
     try {
-      // 1. Obtener todos los clientes
-      const customersRes = await api.get('/customers');
-      if (!customersRes.data || !customersRes.data.success) {
-        throw new Error('No se pudo establecer conexión con el servidor.');
-      }
-
-      // 2. Filtrar clientes que coincidan con el email y documento
-      const matchedCustomers = customersRes.data.data.filter(c => {
-        const emailMatch = c.email && c.email.trim().toLowerCase() === email.trim().toLowerCase();
-        // Coincidir documento de identidad: exacto, o si es autogenerado ("CLI-xxxxxx")
-        const docMatch = c.document && (
-          c.document.trim().toLowerCase() === documentNumber.trim().toLowerCase() ||
-          c.document.trim().startsWith('CLI-')
-        );
-        return emailMatch && docMatch;
-      });
-
-      if (matchedCustomers.length === 0) {
-        setReservations([]);
-        setLoading(false);
-        return;
-      }
-
-      const customerIds = matchedCustomers.map(c => c.id_customer);
-      // Guardar el primer cliente para mostrar en la info de la reserva
-      const mainCustomer = matchedCustomers[0];
-
-      // 3. Obtener todas las cotizaciones/reservas
-      const quotesRes = await api.get('/quotes');
-      if (!quotesRes.data || !quotesRes.data.success) {
-        throw new Error('No se pudo cargar la información de cotizaciones.');
-      }
-
-      // Filtrar cotizaciones asociadas a este cliente
-      const myQuotes = quotesRes.data.data.filter(q => customerIds.includes(q.id_customer));
-
-      if (myQuotes.length === 0) {
-        setReservations([]);
-        setLoading(false);
-        return;
-      }
-
-      // 4. Obtener modelos para cruzar los detalles de vehículos
-      const modelsRes = await api.get('/models');
-      const modelsList = modelsRes.data?.success ? modelsRes.data.data : [];
-
-      // Cruzar información
-      const populatedQuotes = myQuotes.map(quote => {
-        let modelName = 'Modelo Premium';
-        let bodyType = 'Deportivo';
-        let year = '';
-        let color = '';
-
-        for (const m of modelsList) {
-          const vehicle = m.vehicles?.find(v => v.id_vehicle === quote.id_vehicle);
-          if (vehicle) {
-            modelName = m.name;
-            bodyType = m.body_type || '';
-            year = vehicle.year ? vehicle.year.toString() : '';
-            color = vehicle.color || '';
-            break;
-          }
+      // Llamar al nuevo endpoint seguro del backend que realiza la búsqueda y cruce de datos en el servidor
+      const response = await api.get('/quotes/public-search', {
+        params: {
+          email: email.trim(),
+          document: documentNumber.trim()
         }
-
-        return {
-          ...quote,
-          modelName,
-          bodyType,
-          year,
-          color,
-          customerName: `${mainCustomer.first_name} ${mainCustomer.last_name}`,
-          customerEmail: mainCustomer.email,
-          customerPhone: mainCustomer.phone,
-          customerDocument: mainCustomer.document
-        };
       });
+
+      if (!response.data || !response.data.success) {
+        throw new Error('No se pudo establecer conexión con el servidor o realizar la búsqueda.');
+      }
+
+      const populatedQuotes = response.data.data;
 
       // Ordenar por fecha de creación descendente (más recientes primero)
       populatedQuotes.sort((a, b) => new Date(b.date || b.fecha_creacion) - new Date(a.date || a.fecha_creacion));

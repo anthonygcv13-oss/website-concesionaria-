@@ -1,24 +1,266 @@
-import React, { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import TestimonialCard from '../components/TestimonialCard';
+import useScrollReveal from '../hooks/useScrollReveal';
+import PageTransition from '../components/PageTransition';
+import api from '../services/api';
+
+const soldCarsTestimonials = [
+  {
+    id: 1,
+    vehicleName: "Elysian V8",
+    price: "Vendido por $145,000 USD",
+    badge: "Vendido",
+    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=800",
+    rating: 5,
+    buyerName: "Alejandro M.",
+    buyerRole: "Coleccionista",
+    experience: "El nivel de atención y el conocimiento técnico del equipo de Carliz no tiene comparación. Encontré el auto de mis sueños y el proceso fue impecable de principio a fin.",
+    initialLikes: 142,
+    specs: [
+      { label: "Aceleración", value: "3.2s 0-100", icon: "speed" },
+      { label: "Potencia", value: "620 CV", icon: "bolt" }
+    ],
+    reelVideos: [
+      "https://cdn.pixabay.com/video/2023/09/24/180347-868459671_large.mp4",
+      "https://cdn.pixabay.com/video/2023/06/13/166954-836975815_large.mp4"
+    ]
+  },
+  {
+    id: 2,
+    vehicleName: "Apex Prime",
+    price: "Vendido por $185,000 USD",
+    badge: "Vendido",
+    image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800",
+    rating: 5,
+    buyerName: "Valentina R.",
+    buyerRole: "Piloto Amateur",
+    experience: "Confío plenamente en su taller especializado para el cuidado de mi flota. Entienden que para un entusiasta, cada segundo y cada detalle cuentan con la máxima precisión.",
+    initialLikes: 98,
+    specs: [
+      { label: "Tracción", value: "AWD PRO", icon: "sports_motorsports" },
+      { label: "Plazas", value: "7 Plazas", icon: "group" }
+    ],
+    reelVideos: [
+      "https://cdn.pixabay.com/video/2023/11/20/190718-885957535_large.mp4"
+    ]
+  },
+  {
+    id: 3,
+    vehicleName: "Ignis R",
+    price: "Vendido por $290,000 USD",
+    badge: "Edición Track",
+    image: "https://images.unsplash.com/photo-1525609004556-c46c7d6cf0a3?auto=format&fit=crop&q=80&w=800",
+    rating: 5,
+    buyerName: "Carlos P.",
+    buyerRole: "Empresario",
+    experience: "Una experiencia de adquisición sin igual. La entrega del Ignis R fue un evento en sí mismo. Su rendimiento en circuito supera todas mis expectativas.",
+    initialLikes: 215,
+    specs: [
+      { label: "Estructura", value: "Monocasco", icon: "architecture" },
+      { label: "Aero", value: "Activa", icon: "air" }
+    ],
+    reelVideos: [
+      "https://cdn.pixabay.com/video/2023/09/24/180347-868459671_large.mp4"
+    ]
+  }
+];
 
 export default function Home() {
   const navigate = useNavigate();
+  const scrollRef = useRef(null);
+  const [soldVehicles, setSoldVehicles] = useState([]);
+  const [loadingSold, setLoadingSold] = useState(true);
+
+  // References to synchronize manual scrolls and auto-scroll loop
+  const isHovered = useRef(false);
+  const isAutoScrollingPaused = useRef(false);
+  const currentScroll = useRef(0);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      isAutoScrollingPaused.current = true;
+      scrollRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+      
+      setTimeout(() => {
+        if (scrollRef.current) {
+          currentScroll.current = scrollRef.current.scrollLeft;
+        }
+        isAutoScrollingPaused.current = false;
+      }, 800);
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      isAutoScrollingPaused.current = true;
+      scrollRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+      
+      setTimeout(() => {
+        if (scrollRef.current) {
+          currentScroll.current = scrollRef.current.scrollLeft;
+        }
+        isAutoScrollingPaused.current = false;
+      }, 800);
+    }
+  };
+
+  useEffect(() => {
+    const fetchSoldVehicles = async () => {
+      try {
+        const response = await api.get('/models');
+        const modelsList = response.data?.success ? response.data.data : [];
+        
+        const soldList = [];
+        modelsList.forEach((m) => {
+          const soldVehiclesForModel = m.vehicles ? m.vehicles.filter(v => v.status === 'sold') : [];
+          
+          soldVehiclesForModel.forEach((vehicle) => {
+            let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800'; // Default fallback
+            if (vehicle.images && vehicle.images.length > 0) {
+              const primaryImage = vehicle.images.find(img => img.is_primary) || vehicle.images[0];
+              if (primaryImage?.url) {
+                image = primaryImage.url;
+              }
+            }
+
+            // Specs
+            const specs = [];
+            const ft = (m.fuel_type || '').toLowerCase();
+            const fuelValue = ft === 'hybrid' ? 'Híbrido' : ft === 'electric' ? 'Eléctrico' : ft === 'gasoline' ? 'Gasolina' : ft === 'diesel' ? 'Diésel' : ft;
+            if (fuelValue) specs.push({ label: 'Combustible', value: fuelValue, icon: 'bolt' });
+
+            const trans = (m.transmission || '').toLowerCase();
+            const transValue = trans === 'automatic' ? 'Automático' : trans === 'manual' ? 'Manual' : trans;
+            if (transValue) specs.push({ label: 'Transmisión', value: transValue, icon: 'speed' });
+
+            // Generate a random initial likes for database items
+            const initialLikes = Math.floor(Math.random() * 150) + 50;
+
+            // Generate buyer experience
+            const defaultExperiences = [
+              "Una experiencia de adquisición sin igual. El vehículo superó todas mis expectativas y el servicio de entrega de Carliz fue impecable.",
+              "El nivel de atención y el conocimiento técnico del equipo es insuperable. El auto está en perfectas condiciones.",
+              "Completamente satisfecho con la compra. La transparencia en todo el proceso y el pedigree del vehículo son excepcionales."
+            ];
+            const randomExperience = defaultExperiences[vehicle.id_vehicle % defaultExperiences.length];
+
+            const buyerNames = ["Alejandro M.", "Valentina R.", "Carlos P.", "Andrés G.", "Sofía L."];
+            const randomBuyerName = buyerNames[vehicle.id_vehicle % buyerNames.length];
+            
+            const buyerRoles = ["Coleccionista", "Piloto Amateur", "Empresario", "Inversionista", "Entusiasta"];
+            const randomBuyerRole = buyerRoles[vehicle.id_vehicle % buyerRoles.length];
+
+            const sampleReels = [
+              "https://cdn.pixabay.com/video/2023/09/24/180347-868459671_large.mp4",
+              "https://cdn.pixabay.com/video/2023/06/13/166954-836975815_large.mp4",
+              "https://cdn.pixabay.com/video/2023/11/20/190718-885957535_large.mp4"
+            ];
+
+            soldList.push({
+              id: `db-sold-${vehicle.id_vehicle}`,
+              vehicleName: `${m.brand ? m.brand.name : ''} ${m.name}`,
+              price: `Vendido por $${Number(vehicle.sale_price || vehicle.purchase_price).toLocaleString('en-US')} USD`,
+              badge: "Vendido",
+              image,
+              rating: 5,
+              buyerName: randomBuyerName,
+              buyerRole: randomBuyerRole,
+              experience: randomExperience,
+              initialLikes,
+              specs,
+              reelVideos: [sampleReels[vehicle.id_vehicle % sampleReels.length]]
+            });
+          });
+        });
+
+        if (soldList.length > 0) {
+          setSoldVehicles(soldList);
+        } else {
+          setSoldVehicles([]);
+        }
+      } catch (err) {
+        console.error("Error loading sold vehicles from backend database:", err);
+        setSoldVehicles([]);
+      } finally {
+        setLoadingSold(false);
+      }
+    };
+
+    fetchSoldVehicles();
+  }, []);
+
+  useEffect(() => {
+    if (loadingSold || soldVehicles.length <= 1) return;
+    
+    let animationFrameId;
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+    
+    currentScroll.current = scrollContainer.scrollLeft;
+    
+    const step = () => {
+      if (scrollContainer) {
+        if (!isHovered.current && !isAutoScrollingPaused.current) {
+          currentScroll.current += 0.45; // Pixels per frame
+          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+          
+          if (currentScroll.current >= maxScroll - 1) {
+            currentScroll.current = 0;
+          }
+          scrollContainer.scrollLeft = currentScroll.current;
+        } else {
+          currentScroll.current = scrollContainer.scrollLeft;
+        }
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+    
+    const handleMouseEnter = () => { isHovered.current = true; };
+    const handleMouseLeave = () => { isHovered.current = false; };
+    const handleScroll = () => {
+      if (isHovered.current || isAutoScrollingPaused.current) {
+        currentScroll.current = scrollContainer.scrollLeft;
+      }
+    };
+    
+    scrollContainer.addEventListener('mouseenter', handleMouseEnter);
+    scrollContainer.addEventListener('mouseleave', handleMouseLeave);
+    scrollContainer.addEventListener('scroll', handleScroll);
+    
+    animationFrameId = requestAnimationFrame(step);
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
+        scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [soldVehicles, loadingSold]);
+
+  useScrollReveal();
 
   return (
-    <div className="bg-surface text-on-surface font-body-md overflow-x-hidden min-h-screen">
+    <PageTransition className="bg-surface text-on-surface font-body-md overflow-x-hidden min-h-screen">
       <Navbar />
 
       {/* Hero Section */}
       <header className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            alt="High performance luxury car" 
-            className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9i3lNrUBAyNCLmE9vLujuSFCi6Mn3fKTXLeDTeb7ovLvY7axMC8ovTHm-gsVIi1n0hAqZ6oPlrxjdPTL27C5AiSQ7szKORJh11NCtMHW1g-nz0lqNk7tLWoRXxzwZMk9c28p8PxulSVUIRwqoiZTYSNeRhutO-1ULN7lQHs79gjmAIym4v-n3Qitr9AYC3yCVuP9Txc_ZVdZDvD83c_EHS_fYWgKAkyByEGTyZUkEfJlW91FkEStGmK7z0O257vLkeONbFNNYy8tw"
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video 
+            src="/assets/video2.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover scale-115 origin-top"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent z-10"></div>
         </div>
         <div className="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
           <div className="max-w-2xl">
@@ -53,18 +295,18 @@ export default function Home() {
 
       {/* Features Bento Grid */}
       <section className="py-16 md:py-section-padding px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
           <h2 className="font-headline-lg text-headline-lg text-primary mb-4">Servicios Distinguidos</h2>
           <div className="h-1 w-20 bg-secondary mx-auto"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter h-auto md:h-[600px]">
           {/* Main Feature */}
-          <div className="md:col-span-7 bg-surface-container-low group overflow-hidden relative p-12 flex flex-col justify-end">
+          <div className="md:col-span-7 bg-surface-container-low group overflow-hidden relative p-12 flex flex-col justify-end reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
             <div className="absolute inset-0 z-0">
               <img 
-                alt="Luxury cars display" 
+                alt="Modelos Exclusivos" 
                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 opacity-20 group-hover:opacity-40" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiuXIampK-VMFDQs-EyoSwwY_VmEjLdR6eVvYXYkGaKkrzGyMTwMONw1uENHMSE_qiN08S2aXtvlA-esiAwms0uuqEI3gvnFM6Qa4x9IBPuUMFV7XEHc0kUJMMp_gJYH2uM6eBJcOd5uWmEvSl7ezssuY2aZGmoJpMKDX-z_qvwHmEX2WztaXbcsustPKcZTG7YKHLZdMiMb5bz_ZDp3qHNfXZZOVt0-_1OARKg5vtXCMo6ZOUyPSXp37n6G2y70OiCxwn6SzkyC-K"
+                src="/assets/bento_models.png"
               />
             </div>
             <div className="relative z-10">
@@ -78,69 +320,180 @@ export default function Home() {
           </div>
 
           {/* Side Features Stack */}
-          <div className="md:col-span-5 grid grid-rows-2 gap-gutter">
-            <div className="bg-primary text-on-primary p-10 flex flex-col justify-center border-l-4 border-secondary">
-              <span className="material-symbols-outlined text-secondary-fixed text-4xl mb-4">precision_manufacturing</span>
-              <h3 className="font-headline-lg text-headline-lg mb-2">Servicio Técnico</h3>
-              <p className="text-on-primary-container opacity-80">Mantenimiento especializado por ingenieros certificados con tecnología de diagnóstico de última generación.</p>
+          <div className="md:col-span-5 grid grid-rows-2 gap-gutter reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
+            {/* Servicio Técnico */}
+            <div className="bg-surface-container-low group overflow-hidden relative p-8 flex flex-col justify-end transition-all duration-300">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  alt="Servicio Técnico" 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 opacity-20 group-hover:opacity-40" 
+                  src="/assets/bento_service.png"
+                />
+              </div>
+              <div className="relative z-10">
+                <span className="text-secondary font-label-md text-[10px] uppercase tracking-widest mb-2 block">Mantenimiento VIP</span>
+                <h3 className="font-headline-lg text-xl md:text-2xl text-primary mb-2">Servicio Técnico</h3>
+                <p className="text-on-surface-variant text-sm mb-4 max-w-md">Mantenimiento especializado por ingenieros certificados con tecnología de diagnóstico de última generación.</p>
+                <Link className="flex items-center text-secondary font-label-md text-xs hover:translate-x-2 transition-transform" to="/servicios">
+                  Ver Servicios <span className="material-symbols-outlined ml-2 text-sm">arrow_forward</span>
+                </Link>
+              </div>
             </div>
-            <div className="bg-surface-container-high p-10 flex flex-col justify-center hover:bg-surface-variant transition-colors group">
-              <span className="material-symbols-outlined text-primary text-4xl mb-4 group-hover:text-secondary transition-colors">settings_suggest</span>
-              <h3 className="font-headline-lg text-headline-lg text-primary mb-2">Repuestos Originales</h3>
-              <p className="text-on-surface-variant">Garantizamos la integridad y el valor de su inversión utilizando únicamente componentes auténticos de fábrica.</p>
+
+            {/* Repuestos Originales */}
+            <div className="bg-surface-container-low group overflow-hidden relative p-8 flex flex-col justify-end transition-all duration-300">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  alt="Repuestos Originales" 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 opacity-20 group-hover:opacity-40" 
+                  src="/assets/bento_parts.png"
+                />
+              </div>
+              <div className="relative z-10">
+                <span className="text-secondary font-label-md text-[10px] uppercase tracking-widest mb-2 block">Componentes Genuinos</span>
+                <h3 className="font-headline-lg text-xl md:text-2xl text-primary mb-2">Repuestos Originales</h3>
+                <p className="text-on-surface-variant text-sm mb-4 max-w-md">Garantizamos la integridad y el valor de su inversión utilizando únicamente componentes auténticos de fábrica.</p>
+                <Link className="flex items-center text-secondary font-label-md text-xs hover:translate-x-2 transition-transform" to="/cotizar">
+                  Solicitar Repuestos <span className="material-symbols-outlined ml-2 text-sm">arrow_forward</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="bg-primary text-on-primary py-16 md:py-section-padding">
+      <section id="testimonials" className="bg-primary text-on-primary py-16 md:py-section-padding border-t border-b border-outline-variant/10">
         <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter items-center">
-            <div>
-              <h2 className="font-headline-lg text-headline-lg mb-8">La Experiencia <span className="text-secondary-fixed">Carliz</span></h2>
-              <div className="space-y-12">
-                <div className="relative pl-12">
-                  <span className="material-symbols-outlined absolute left-0 top-0 text-secondary-fixed text-4xl opacity-50">format_quote</span>
-                  <p className="text-body-lg italic mb-4">"El nivel de atención y el conocimiento técnico del equipo de Carliz no tiene comparación. Encontré el auto de mis sueños y el proceso fue impecable de principio a fin."</p>
-                  <cite className="font-label-md text-label-md not-italic text-secondary-fixed uppercase tracking-widest">— Alejandro M., Coleccionista</cite>
-                </div>
-                <div className="relative pl-12">
-                  <span className="material-symbols-outlined absolute left-0 top-0 text-secondary-fixed text-4xl opacity-50">format_quote</span>
-                  <p className="text-body-lg italic mb-4">"Confío plenamente en su taller especializado para el cuidado de mi flota. Entienden que para un entusiasta, cada segundo y cada detalle cuentan."</p>
-                  <cite className="font-label-md text-label-md not-italic text-secondary-fixed uppercase tracking-widest">— Valentina R., Piloto Amateur</cite>
-                </div>
-              </div>
+          
+          {/* New Sold Cars Slider */}
+          <div className="reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
+            {/* Header row with Title */}
+            <div className="mb-12 text-center">
+              <span className="text-secondary font-label-md text-label-md uppercase tracking-widest mb-3 block">Colección Entregada</span>
+              <h2 className="font-headline-xl text-headline-xl text-white">
+                Autos <span className="luxury-gradient-text italic font-bold">Vendidos</span>
+              </h2>
             </div>
-            <div className="hidden md:block relative h-[500px] overflow-hidden rounded-lg">
-              <img 
-                alt="Luxury lifestyle" 
-                className="w-full h-full object-cover" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmrTB4DwAhtZxKlb4SFX0Av6sVrts6M0ldAcK9vmijhqjcn-6-RKqMRzXFwgOKz-Mc8xo_Vqe3DoNJJSeWgTlgWOlwndn4LIyfshagoV_OhFBG5rq59Fsoce79kIjKgc_pJ7V5nvffLCfONsubAMbDnFja7kpG_3ZijUuDML_FPxTMcFxdxA92yEXae9Y8taRLAxihaR4R6LPRyLVYtb5PyRckH9U-DGDywRQQJDyuspGY8vs1-J0jQQL_p8eOLEiYGTgT7VPPj69Z"
-              />
+
+            {/* Slider container with relative positioning and flanking arrow buttons */}
+            <div className="relative group/slider">
+              {/* Left Arrow Button */}
+              {soldVehicles.length > 0 && (
+                <button 
+                  onClick={scrollLeft} 
+                  className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-20 p-4 border border-outline-variant/20 hover:border-secondary rounded-full flex items-center justify-center text-white hover:text-secondary transition-all cursor-pointer bg-[#121212]/90 backdrop-blur-sm shadow-xl shadow-black/50 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
+                  aria-label="Desplazar a la izquierda"
+                >
+                  <span className="material-symbols-outlined text-lg">arrow_back</span>
+                </button>
+              )}
+
+              {/* Slider cards wrapper */}
+              <div 
+                ref={scrollRef}
+                className="overflow-x-auto no-scrollbar pb-6 scroll-smooth px-2"
+              >
+                {loadingSold ? (
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="min-w-[290px] sm:min-w-[340px] md:min-w-[380px] max-w-[400px] flex-shrink-0 bg-[#121212] border border-outline-variant/10 rounded-lg p-6 h-[500px] animate-pulse">
+                      <div className="bg-white/5 h-[220px] w-full rounded-md mb-6"></div>
+                      <div className="bg-white/5 h-6 w-3/4 rounded mb-4"></div>
+                      <div className="bg-white/5 h-4 w-1/2 rounded mb-8"></div>
+                      <div className="bg-white/5 h-20 w-full rounded"></div>
+                    </div>
+                  ))
+                ) : soldVehicles.length > 0 ? (
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ visible: { transition: { staggerChildren: 0.18 } } }}
+                    className="flex gap-6"
+                  >
+                    {soldVehicles.map((item) => (
+                      <TestimonialCard
+                        key={item.id}
+                        item={item}
+                        navigate={navigate}
+                      />
+                    ))}
+                  </motion.div>
+                ) : (
+                  <div className="text-center py-20 bg-surface dark:bg-[#121212] border border-outline-variant/20 rounded-lg flex flex-col items-center w-full select-none">
+                    <span className="material-symbols-outlined text-6xl text-secondary/35 mb-4">hourglass_empty</span>
+                    <h3 className="font-headline-lg text-headline-lg text-primary dark:text-white mb-2">Sin Resultados</h3>
+                    <p className="font-body-md text-on-surface-variant max-w-md mx-auto mb-0">
+                      No se han encontrado vehículos vendidos en la base de datos.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Arrow Button */}
+              {soldVehicles.length > 0 && (
+                <button 
+                  onClick={scrollRight} 
+                  className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-20 p-4 border border-outline-variant/20 hover:border-secondary rounded-full flex items-center justify-center text-white hover:text-secondary transition-all cursor-pointer bg-[#121212]/90 backdrop-blur-sm shadow-xl shadow-black/50 opacity-100 md:opacity-0 md:group-hover/slider:opacity-100 hover:scale-105 active:scale-95"
+                  aria-label="Desplazar a la derecha"
+                >
+                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                </button>
+              )}
             </div>
           </div>
+
         </div>
       </section>
 
       {/* Call to Action */}
       <section className="py-16 md:py-section-padding relative">
-        <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-center">
-          <div className="inline-block px-4 py-1 border border-secondary text-secondary font-label-md text-label-md uppercase tracking-widest mb-8">Consulta VIP</div>
-          <h2 className="font-headline-xl text-3xl sm:text-4xl md:text-headline-xl text-primary mb-8">Comience su próxima trayectoria</h2>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-2xl mx-auto">
-            Nuestros asesores expertos están listos para brindarle una experiencia de adquisición personalizada. Solicite una cotización o agende una visita privada.
-          </p>
-          <div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-6">
-            <button 
-              className="w-full md:w-auto bg-primary text-on-primary px-12 py-5 rounded-DEFAULT font-label-md text-label-md uppercase tracking-widest hover:bg-secondary transition-all shadow-xl cursor-pointer"
-              onClick={() => navigate('/cotizar')}
-            >
-              Solicitar Cotización
-            </button>
-            <a className="w-full md:w-auto flex items-center justify-center font-label-md text-label-md uppercase tracking-widest text-primary hover:text-secondary transition-colors" href="tel:+123456789">
-              <span className="material-symbols-outlined mr-2">call</span> +1 (234) 567-890
-            </a>
+        <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* Left Column: Content */}
+            <div className="lg:col-span-7 text-center lg:text-left">
+              <div className="inline-block px-4 py-1 border border-secondary text-secondary font-label-md text-label-md uppercase tracking-widest mb-8">
+                Consulta VIP
+              </div>
+              <h2 className="font-headline-xl text-3xl sm:text-4xl md:text-headline-xl text-primary mb-8 leading-tight">
+                Comience su próxima trayectoria
+              </h2>
+              <p className="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-2xl mx-auto lg:mx-0 lg:max-w-none">
+                Nuestros asesores expertos están listos para brindarle una experiencia de adquisición personalizada. Solicite una cotización o agende una visita privada.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center lg:justify-start items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <button 
+                  className="w-full sm:w-auto bg-primary text-on-primary px-12 py-5 rounded-DEFAULT font-label-md text-label-md uppercase tracking-widest hover:bg-secondary transition-all shadow-xl cursor-pointer"
+                  onClick={() => navigate('/cotizar')}
+                >
+                  Solicitar Cotización
+                </button>
+                <a className="w-full sm:w-auto flex items-center justify-center gap-3 bg-secondary text-on-secondary px-10 py-5 rounded-DEFAULT font-label-md text-label-md uppercase tracking-widest hover:bg-primary hover:text-on-primary hover:translate-y-[-2px] transition-all shadow-xl cursor-pointer" href="https://wa.me/584143513000" target="_blank" rel="noopener noreferrer">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="w-5 h-5 fill-current">
+                    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                  </svg>
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Right Column: Elegant Video Frame */}
+            <div className="lg:col-span-5 flex justify-center w-full">
+              <div className="relative w-full max-w-[320px] sm:max-w-[400px] aspect-square bg-black rounded-xl overflow-hidden shadow-2xl border border-outline-variant/10 group/cta-video">
+                {/* Subtle light reflex overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none z-10"></div>
+                {/* Looping premium video */}
+                <video
+                  src="/assets/video.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover group-hover/cta-video:scale-105 transition-transform duration-[4000ms] ease-out"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
         {/* Subtle Background Decorative Element */}
@@ -148,6 +501,6 @@ export default function Home() {
       </section>
 
       <Footer />
-    </div>
+    </PageTransition>
   );
 }

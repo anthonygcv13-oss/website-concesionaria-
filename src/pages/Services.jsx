@@ -1,52 +1,44 @@
-import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useScrollReveal from '../hooks/useScrollReveal';
+import PageTransition from '../components/PageTransition';
 
 export default function Services() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('opacity-100', 'translate-y-0');
-          entry.target.classList.remove('opacity-0', 'translate-y-10');
-        }
-      });
-    }, observerOptions);
-
-    const elements = document.querySelectorAll('.reveal-on-scroll');
-    elements.forEach(el => observer.observe(el));
-
-    return () => {
-      elements.forEach(el => observer.unobserve(el));
-    };
-  }, []);
+  useScrollReveal();
 
   return (
-    <div className="bg-surface text-on-surface font-body-md overflow-x-hidden min-h-screen">
+    <PageTransition className="bg-surface text-on-surface font-body-md overflow-x-hidden min-h-screen">
       <Navbar />
 
-      <main className="mt-20">
-        {/* Hero Section */}
-        <section className="relative h-[400px] md:h-[614px] flex items-center justify-center overflow-hidden bg-primary">
-          <div className="absolute inset-0 z-0 opacity-40">
+      {/* Hero Section */}
+      <header className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            alt="Luxury garage" 
+            className="w-full h-full object-cover" 
+            src="/assets/hero_services.png"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+        </div>
+        <div className="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+          <div className="max-w-2xl">
             <img 
-              alt="Luxury garage" 
-              className="w-full h-full object-cover hero-mask" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYW7wwT4-7fsU8xmgPLdAoWOjsa3ziWzq8ySX5-J49LmPK6dLYglegjBXrttTL77wVQK7iwnp5YmDrDvB0Bdm6xVyt0R2IhycLU4ZTBC_e5xQ7SpUweZoS1AqmeQztNZ3GFn4k9JDw7Fqqi-s9c5MiARSbQ3nUZT-ADPKhz06XZomD3nbLZN_YdvQF9spEgKkCFXoro0-cBaT3SF0Km58nn2v_NBZ_o-hMPBvHt6DwgzBZ6m6b1e3c09fUKDRESwfiM-wS66BlwSV0"
+              alt="Carliz Logo" 
+              className="h-28 md:h-48 mb-6 md:mb-8 object-contain" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkhrfI6vhLsaFeBWKuwCVqnzJTkYwGjMQh84H-k8b383Vvq7V9kpkBOrLu2KnQYdHCR9t0y0qSs1_ulP06RZC8fzaVIT0V5rkwoE4OA1TmGZ2zRsfOyxdxdvWlZTtenZJPQZCZHsYmCXJCBA62nwPvVMOEPVMoqHlpjI3SEku84d4Zp1W1_k39YV6fH8goA19WBUu1rKlhReDe9xplPtFSgbYCYE48oWYKud47Nt0P5PmJc76mlgU8RrMjVxXa_hz70IzPgUlcY0SW"
             />
+            <h1 className="font-headline-xl text-3xl sm:text-4xl md:text-headline-xl text-primary mb-6 animate-fade-in leading-tight">
+              Servicios de <br /><span className="luxury-gradient-text italic font-bold">Élite</span>
+            </h1>
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-0 max-w-lg">
+              Experimente el estándar de servicio que su inversión merece. Ofrecemos mantenimiento de alta precisión, repuestos originales y asesoría financiera personalizada.
+            </p>
           </div>
-          <div className="relative z-10 text-center px-margin-mobile reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
-            <h1 className="font-display-lg text-4xl md:text-display-lg text-on-primary mb-4">Servicios de Élite</h1>
-            <p className="font-label-md text-label-md uppercase tracking-[0.3em] text-secondary-fixed">Excelencia en cada milímetro</p>
-          </div>
-        </section>
+        </div>
+      </header>
 
         {/* Main Services Section */}
         <section className="py-16 md:py-section-padding px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
@@ -160,9 +152,7 @@ export default function Services() {
             </div>
           </div>
         </section>
-      </main>
-
       <Footer />
-    </div>
+    </PageTransition>
   );
 }

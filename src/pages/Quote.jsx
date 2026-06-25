@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useScrollReveal from '../hooks/useScrollReveal';
+import PageTransition from '../components/PageTransition';
 
 export default function Quote() {
   const navigate = useNavigate();
@@ -33,14 +35,18 @@ export default function Quote() {
         ]);
 
         if (modelsRes.data && modelsRes.data.success) {
-          const mapped = modelsRes.data.data.map(m => {
-            const vehicle = m.vehicles && m.vehicles.length > 0 ? m.vehicles[0] : null;
-            return {
-              id: m.id_model,
-              name: m.name,
-              price: vehicle ? parseFloat(vehicle.sale_price) : 250000,
-              id_vehicle: vehicle ? vehicle.id_vehicle : null
-            };
+          const mapped = [];
+          modelsRes.data.data.forEach(m => {
+            const availableVehicles = m.vehicles ? m.vehicles.filter(v => v.status === 'available') : [];
+            availableVehicles.forEach(vehicle => {
+              mapped.push({
+                id: `vehicle-${vehicle.id_vehicle}`,
+                id_model: m.id_model,
+                id_vehicle: vehicle.id_vehicle,
+                name: `${m.name} (${vehicle.year} - ${vehicle.color})`,
+                price: parseFloat(vehicle.sale_price)
+              });
+            });
           });
           if (mapped.length > 0) {
             setVehicles(mapped);
@@ -75,28 +81,12 @@ export default function Quote() {
   }, [location.state]);
 
   useEffect(() => {
-    // Parallax effect
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
-
-    // Intersection observer for animations
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('opacity-100', 'translate-y-0');
-          entry.target.classList.remove('opacity-0', 'translate-y-10');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    const animatedElements = document.querySelectorAll('.reveal-on-scroll');
-    animatedElements.forEach(el => observer.observe(el));
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      animatedElements.forEach(el => observer.unobserve(el));
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useScrollReveal();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -235,7 +225,7 @@ export default function Quote() {
     };
 
     return (
-      <div className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
+      <PageTransition className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
         <Navbar />
 
         <main className="min-h-screen pt-28 pb-16 flex items-center justify-center p-4">
@@ -384,12 +374,12 @@ export default function Quote() {
             </div>
           </div>
         </main>
-      </div>
+      </PageTransition>
     );
   }
 
   return (
-    <div className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
+    <PageTransition className="bg-surface text-on-surface selection:bg-secondary/30 min-h-screen">
       <Navbar />
 
       {/* Main Content Canvas */}
@@ -398,7 +388,7 @@ export default function Quote() {
         <div className="w-full max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 min-h-[calc(100vh-80px)]">
           {/* Form Section (5 Columns) */}
           <section className="col-span-1 md:col-span-5 flex flex-col justify-center px-margin-mobile md:px-margin-desktop py-12 bg-white animate-fade-in">
-            <div className="max-w-md w-full mx-auto space-y-12">
+            <div className="max-w-md w-full mx-auto space-y-12 reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
               <header className="space-y-4">
                 <div className="flex items-center gap-2 text-secondary">
                   <span className="h-[1px] w-12 bg-secondary"></span>
@@ -568,7 +558,7 @@ export default function Quote() {
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHeV9CJ0jEl0LkZGdsNu8VoGcOOQy--HVkqMBn4r_SC6yT5DcYkQ6MVH5bduQFSG6Yl6WtoPlccyCfzaWH96uw07EQUtrR-Uu7hRa9GFvyrkgEw0z81bFAvR6dEw6OY0XrRdUr9HR4Zf6Fl_QGB5YE5JTI5hl2D2pQh27uyFI43VtBArqcRrdtqTf9SbgahlI5vfJPaW7dvX8HZAYRJQ10YpyMAXo_NcMTkUqH8UeLjSp7HApmIgIMb0K7Al7zzC2V7Ol46hCoynq3"
             />
             {/* Floating Info Card (Editorial Influence) */}
-            <div className="absolute bottom-20 left-20 z-20 max-w-sm backdrop-blur-md bg-white/10 border border-white/20 p-8 space-y-4">
+            <div className="absolute bottom-20 left-20 z-20 max-w-sm backdrop-blur-md bg-white/10 border border-white/20 p-8 space-y-4 reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
               <p className="font-label-md text-label-md text-secondary-fixed tracking-widest uppercase">Every Second Counts</p>
               <h2 className="font-headline-lg text-headline-lg text-white">Ingeniería que desafía lo convencional.</h2>
               <div className="flex items-center gap-4 pt-4">
@@ -596,6 +586,6 @@ export default function Quote() {
       </main>
 
       <Footer />
-    </div>
+    </PageTransition>
   );
 }

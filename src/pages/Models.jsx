@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import VehicleImageCarousel from '../components/VehicleImageCarousel';
+import CatalogSkeleton from '../components/CatalogSkeleton';
+import useScrollReveal from '../hooks/useScrollReveal';
+import PageTransition from '../components/PageTransition';
+
 export default function Models() {
   const navigate = useNavigate();
   const [models, setModels] = useState([]);
@@ -16,6 +21,13 @@ export default function Models() {
     color: 'Todos',
     anio: 'Todos'
   });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [filters]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -25,17 +37,14 @@ export default function Models() {
         const response = await api.get('/models', { signal: controller.signal });
         const modelsList = response.data?.success ? response.data.data : [];
 
-        const fullModels = modelsList.map((m) => {
-          // Get first available vehicle
-          const vehicle = m.vehicles && m.vehicles.length > 0 ? m.vehicles[0] : null;
+        const fullModels = [];
+        modelsList.forEach((m) => {
+          const availableVehicles = m.vehicles ? m.vehicles.filter(v => v.status === 'available') : [];
 
-          let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800'; // Default fallback
-          let price = 'Consultar precio';
-          let tag = 'Disponible';
-
-          if (vehicle) {
-            price = `$${Number(vehicle.sale_price).toLocaleString('en-US')}.00 USD`;
-            tag = vehicle.status === 'available' ? 'Disponible' : vehicle.status;
+          availableVehicles.forEach((vehicle) => {
+            let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800'; // Default fallback
+            let price = `$${Number(vehicle.sale_price).toLocaleString('en-US')}.00 USD`;
+            let tag = 'Disponible';
 
             // Get primary image or the first image
             if (vehicle.images && vehicle.images.length > 0) {
@@ -44,51 +53,51 @@ export default function Models() {
                 image = primaryImage.url;
               }
             }
-          }
 
-          // Format category based on body_type
-          let category = 'Otros';
-          const bt = (m.body_type || '').toLowerCase();
-          if (bt === 'coupe') category = 'Coupé';
-          else if (bt === 'sedan') category = 'Sedán';
-          else if (bt === 'suv') category = 'SUV Luxury';
-          else if (bt === 'clasicos' || bt === 'clásicos') category = 'Clásicos';
-          else if (bt) category = bt.charAt(0).toUpperCase() + bt.slice(1);
+            // Format category based on body_type
+            let category = 'Otros';
+            const bt = (m.body_type || '').toLowerCase();
+            if (bt === 'coupe') category = 'Coupé';
+            else if (bt === 'sedan') category = 'Sedán';
+            else if (bt === 'suv') category = 'SUV Luxury';
+            else if (bt === 'clasicos' || bt === 'clásicos') category = 'Clásicos';
+            else if (bt) category = bt.charAt(0).toUpperCase() + bt.slice(1);
 
-          // Get brand name from the joined object
-          const collection = m.brand ? m.brand.name : 'Colección Premium';
+            // Get brand name from the joined object
+            const collection = m.brand ? m.brand.name : 'Colección Premium';
 
-          // Format specs
-          const specs = [];
-          const ft = (m.fuel_type || '').toLowerCase();
-          const fuelValue = ft === 'hybrid' ? 'Híbrido' : ft === 'electric' ? 'Eléctrico' : ft === 'gasoline' ? 'Gasolina' : ft === 'diesel' ? 'Diésel' : ft;
-          if (fuelValue) specs.push({ label: 'Combustible', value: fuelValue });
+            // Format specs
+            const specs = [];
+            const ft = (m.fuel_type || '').toLowerCase();
+            const fuelValue = ft === 'hybrid' ? 'Híbrido' : ft === 'electric' ? 'Eléctrico' : ft === 'gasoline' ? 'Gasolina' : ft === 'diesel' ? 'Diésel' : ft;
+            if (fuelValue) specs.push({ label: 'Combustible', value: fuelValue });
 
-          const trans = (m.transmission || '').toLowerCase();
-          const transValue = trans === 'automatic' ? 'Automático' : trans === 'manual' ? 'Manual' : trans;
-          if (transValue) specs.push({ label: 'Transmisión', value: transValue });
+            const trans = (m.transmission || '').toLowerCase();
+            const transValue = trans === 'automatic' ? 'Automático' : trans === 'manual' ? 'Manual' : trans;
+            if (transValue) specs.push({ label: 'Transmisión', value: transValue });
 
-          if (vehicle) {
             if (vehicle.year) specs.push({ label: 'Año', value: vehicle.year.toString() });
             if (vehicle.color) specs.push({ label: 'Color', value: vehicle.color });
             if (vehicle.mileage !== undefined) specs.push({ label: 'Kilometraje', value: `${vehicle.mileage} km` });
-          }
 
-          return {
-            id: `model-${m.id_model}`,
-            id_model: m.id_model,
-            name: m.name,
-            category,
-            collection,
-            tag,
-            image,
-            price,
-            specs,
-            fuel_type: fuelValue || '',
-            transmission: transValue || '',
-            year: vehicle?.year ? vehicle.year.toString() : '',
-            color: vehicle?.color || ''
-          };
+            fullModels.push({
+              id: `vehicle-${vehicle.id_vehicle}`,
+              id_model: m.id_model,
+              id_vehicle: vehicle.id_vehicle,
+              name: `${m.name} (${vehicle.year} - ${vehicle.color})`,
+              category,
+              collection,
+              tag,
+              image,
+              images: vehicle.images || [],
+              price,
+              specs,
+              fuel_type: fuelValue || '',
+              transmission: transValue || '',
+              year: vehicle.year ? vehicle.year.toString() : '',
+              color: vehicle.color || ''
+            });
+          });
         });
 
         setModels(fullModels);
@@ -110,6 +119,8 @@ export default function Models() {
       controller.abort();
     };
   }, []);
+
+  useScrollReveal({ deps: [models, filters, loading, visibleCount] });
 
   const uniqueBrands = ['Todas', ...new Set(models.map(m => m.collection).filter(Boolean))];
   const uniqueFuels = ['Todos', ...new Set(models.map(m => m.fuel_type).filter(Boolean))];
@@ -154,49 +165,60 @@ export default function Models() {
   });
 
   return (
-    <div className="bg-background text-on-background font-body-md selection:bg-secondary selection:text-white min-h-screen">
+    <PageTransition className="bg-background text-on-background font-body-md selection:bg-secondary selection:text-white min-h-screen">
       <Navbar />
 
-      <main className="pt-20 pb-20 md:pb-0">
-        {/* Hero Section / Title - Redesigned to premium dark mode with glows */}
-        {/* Hero Section / Title - Redesigned to premium dark mode with background image */}
-        <section className="relative h-[320px] md:h-[520px] flex items-center justify-center overflow-hidden bg-primary border-b border-secondary/20">
-          <div className="absolute inset-0 z-0 opacity-40">
+      {/* Hero Section */}
+      <header className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video 
+            src="/assets/video3.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover scale-115 origin-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent z-10"></div>
+        </div>
+        <div className="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+          <div className="max-w-2xl">
             <img 
-              alt="Sleek luxury sports car" 
-              className="w-full h-full object-cover hero-mask" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9i3lNrUBAyNCLmE9vLujuSFCi6Mn3fKTXLeDTeb7ovLvY7axMC8ovTHm-gsVIi1n0hAqZ6oPlrxjdPTL27C5AiSQ7szKORJh11NCtMHW1g-nz0lqNk7tLWoRXxzwZMk9c28p8PxulSVUIRwqoiZTYSNeRhutO-1ULN7lQHs79gjmAIym4v-n3Qitr9AYC3yCVuP9Txc_ZVdZDvD83c_EHS_fYWgKAkyByEGTyZUkEfJlW91FkEStGmK7z0O257vLkeONbFNNYy8tw"
+              alt="Carliz Logo" 
+              className="h-28 md:h-48 mb-6 md:mb-8 object-contain" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkhrfI6vhLsaFeBWKuwCVqnzJTkYwGjMQh84H-k8b383Vvq7V9kpkBOrLu2KnQYdHCR9t0y0qSs1_ulP06RZC8fzaVIT0V5rkwoE4OA1TmGZ2zRsfOyxdxdvWlZTtenZJPQZCZHsYmCXJCBA62nwPvVMOEPVMoqHlpjI3SEku84d4Zp1W1_k39YV6fH8goA19WBUu1rKlhReDe9xplPtFSgbYCYE48oWYKud47Nt0P5PmJc76mlgU8RrMjVxXa_hz70IzPgUlcY0SW"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 via-[#121212]/80 to-[#121212]"></div>
-          </div>
-          
-          <div className="relative z-10 text-center px-margin-mobile max-w-3xl mx-auto flex flex-col items-center">
-            <div className="inline-block px-5 py-2 bg-black/40 backdrop-blur-md border border-secondary/20 rounded-full mb-6">
-              <span className="text-secondary font-label-md text-[11px] uppercase tracking-[0.3em] block">
-                Colección Carliz
-              </span>
-            </div>
-            
-            <h1 className="font-display-lg text-4xl md:text-5xl text-white mb-6 tracking-wide leading-tight">
-              Catálogo <span className="luxury-gradient-text italic font-bold">Exclusivo</span>
+            <h1 className="font-headline-xl text-3xl sm:text-4xl md:text-headline-xl text-primary mb-6 animate-fade-in leading-tight">
+              Catálogo <br /><span className="luxury-gradient-text italic font-bold">Exclusivo</span>
             </h1>
-            
-            <p className="font-body-md text-body-md text-outline-variant max-w-xl leading-relaxed opacity-90">
+            <p className="font-body-lg text-body-lg text-on-surface-variant mb-0 max-w-lg">
               Descubra la ingeniería de precisión y el lujo sin concesiones. Cada vehículo en nuestra colección ha sido seleccionado por su rendimiento excepcional y pedigree histórico.
             </p>
           </div>
-        </section>
+        </div>
+      </header>
 
         {/* Filters Bar - Premium responsive filter panel */}
         {/* Filters Bar - Redesigned with premium rounded pill buttons and custom dropdown filters */}
-        <section className="sticky top-16 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-outline-variant/30 px-margin-mobile md:px-margin-desktop py-5">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 mb-4 text-secondary">
-              <span className="material-symbols-outlined text-[18px]">tune</span>
-              <span className="font-label-md text-xs uppercase tracking-widest font-bold">Filtrar por:</span>
+        <section className="md:sticky md:top-16 static z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-outline-variant/30 px-margin-mobile md:px-margin-desktop py-4">
+          <div className="max-w-7xl mx-auto reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2 text-secondary">
+                <span className="material-symbols-outlined text-[18px]">tune</span>
+                <span className="font-label-md text-xs uppercase tracking-widest font-bold">Filtrar por</span>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="lg:hidden flex items-center gap-1.5 px-4 py-2 bg-secondary/10 hover:bg-secondary/20 border border-secondary/30 rounded text-xs text-secondary font-bold transition-all cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-sm">filter_alt</span>
+                <span>{showMobileFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
+            <div className={`${showMobileFilters ? 'grid' : 'hidden'} lg:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm`}>
               {/* 1. Modelo */}
               <div className="space-y-1.5">
                 <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Modelo</label>
@@ -339,65 +361,71 @@ export default function Models() {
         </section>
 
         {/* Catalog Vertical List */}
-        <section className="px-margin-mobile md:px-margin-desktop py-16 bg-surface">
+        <section id="catalog-section" className="px-margin-mobile md:px-margin-desktop py-16 bg-surface">
           <div className="max-w-7xl mx-auto space-y-16">
             {loading ? (
-              <div className="text-center py-20 bg-white border border-outline-variant/20 rounded-lg flex flex-col items-center justify-center">
-                <span className="material-symbols-outlined text-6xl text-secondary animate-spin mb-4 font-bold">progress_activity</span>
-                <h3 className="font-headline-lg text-headline-lg text-primary mb-2">Cargando Catálogo</h3>
-                <p className="font-body-md text-on-surface-variant">Conectando con el concesionario...</p>
-              </div>
+              <CatalogSkeleton />
             ) : filteredModels.length > 0 ? (
-              filteredModels.map((model, index) => (
-                <article
-                  key={model.id}
-                  className={`group relative bg-white border border-outline-variant/30 overflow-hidden flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
-                    } transition-all duration-500 hover:border-secondary hover:shadow-xl hover:shadow-secondary/5 rounded-lg`}
-                >
-                  <div className="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
-                    <img
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      src={model.image}
-                      alt={model.name}
-                    />
-                    <div className="absolute top-6 left-6 z-10">
-                      <span className="bg-primary text-secondary px-4 py-1.5 font-label-md text-[11px] uppercase tracking-widest font-semibold rounded shadow-md">
-                        {model.tag}
-                      </span>
+              <>
+                {filteredModels.slice(0, visibleCount).map((model, index) => (
+                  <div key={model.id} className="reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">
+                    <article
+                      className={`group relative bg-white border border-outline-variant/30 overflow-hidden flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
+                        } transition-all duration-500 hover:border-secondary hover:shadow-xl hover:shadow-secondary/5 rounded-lg`}
+                    >
+                    <div className="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
+                      <VehicleImageCarousel
+                        images={model.images}
+                        name={model.name}
+                        tag={model.tag}
+                      />
                     </div>
-                  </div>
-                  <div className="md:w-2/5 p-8 md:p-12 flex flex-col justify-between">
-                    <div>
-                      <p className="font-label-md text-xs uppercase text-on-surface-variant/80 tracking-widest mb-2">
-                        {model.collection}
-                      </p>
-                      <h2 className="font-headline-lg text-headline-lg mb-6 group-hover:text-secondary transition-colors duration-300">
-                        {model.name}
-                      </h2>
-                      <div className="space-y-4 mb-8">
-                        {model.specs.map((spec, specIdx) => (
-                          <div key={specIdx} className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
-                            <span className="font-body-md text-on-surface-variant/70">{spec.label}</span>
-                            <span className="font-label-md font-bold text-on-surface">{spec.value}</span>
-                          </div>
-                        ))}
+                    <div className="md:w-2/5 p-8 md:p-12 flex flex-col justify-between">
+                      <div>
+                        <p className="font-label-md text-xs uppercase text-on-surface-variant/80 tracking-widest mb-2">
+                          {model.collection}
+                        </p>
+                        <h2 className="font-headline-lg text-headline-lg mb-6 group-hover:text-secondary transition-colors duration-300">
+                          {model.name}
+                        </h2>
+                        <div className="space-y-4 mb-8">
+                          {model.specs.map((spec, specIdx) => (
+                            <div key={specIdx} className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+                              <span className="font-body-md text-on-surface-variant/70">{spec.label}</span>
+                              <span className="font-label-md font-bold text-on-surface">{spec.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-8">
+                          <span className="font-label-md text-[11px] uppercase text-on-surface-variant/60 block mb-1 tracking-widest">Precio Inicial</span>
+                          <span className="font-headline-lg text-2xl text-secondary font-bold">{model.price}</span>
+                        </div>
+                        <button
+                          className="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded hover:translate-y-[-2px] active:scale-95 cursor-pointer shadow-md"
+                          onClick={() => navigate('/cotizar', { state: { selectedModel: model.name } })}
+                        >
+                          Explorar Modelo
+                        </button>
                       </div>
                     </div>
-                    <div>
-                      <div className="mb-8">
-                        <span className="font-label-md text-[11px] uppercase text-on-surface-variant/60 block mb-1 tracking-widest">Precio Inicial</span>
-                        <span className="font-headline-lg text-2xl text-secondary font-bold">{model.price}</span>
-                      </div>
-                      <button
-                        className="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded hover:translate-y-[-2px] active:scale-95 cursor-pointer shadow-md"
-                        onClick={() => navigate('/cotizar', { state: { selectedModel: model.name } })}
-                      >
-                        Explorar Modelo
-                      </button>
-                    </div>
+                  </article>
+                </div>
+                ))}
+
+                {visibleCount < filteredModels.length && (
+                  <div className="flex justify-center pt-8 pb-4">
+                    <button
+                      onClick={() => setVisibleCount(prev => prev + 10)}
+                      className="group flex items-center gap-3 bg-primary hover:bg-secondary text-secondary hover:text-primary px-10 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded border border-secondary hover:translate-y-[-1px] active:scale-95 cursor-pointer shadow-lg shadow-secondary/5"
+                    >
+                      <span>Cargar más</span>
+                      <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">expand_more</span>
+                    </button>
                   </div>
-                </article>
-              ))
+                )}
+              </>
             ) : (
               <div className="text-center py-20 bg-white dark:bg-[#121212] border border-outline-variant/20 rounded-lg flex flex-col items-center">
                 <span className="material-symbols-outlined text-6xl text-secondary/35 mb-4">hourglass_empty</span>
@@ -423,8 +451,7 @@ export default function Models() {
           </div>
         </section>
 
-      </main>
       <Footer />
-    </div>
+    </PageTransition>
   );
 }

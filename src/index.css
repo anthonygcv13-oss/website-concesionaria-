@@ -133,3 +133,22 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Skeleton shimmer animation for loading placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #e4e2e2 25%, #efeded 50%, #e4e2e2 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Subtle white-to-gold gradient background visible during page transitions */
+body {
+  background: linear-gradient(180deg, #fbf9f8 0%, #f8f0e0 50%, #f5e8d0 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}

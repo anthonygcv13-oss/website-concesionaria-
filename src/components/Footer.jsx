@@ -34,14 +34,14 @@ export default function Footer() {
 
       {/* Social networks and copyright section */}
       <div className="px-margin-desktop max-w-container-max mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col items-center text-center space-y-6 relative z-10">
-        
+
         {/* Social Networks Icons */}
         <div className="flex gap-4 justify-center items-center">
           {/* Instagram Button - Solid Gold Circle */}
-          <a 
-            href="https://instagram.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-white hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-lg shadow-secondary/25"
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -49,10 +49,10 @@ export default function Footer() {
             </svg>
           </a>
           {/* Facebook Button - Dark Translucent Circle with white outline */}
-          <a 
-            href="https://facebook.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-12 h-12 rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white hover:bg-white/10 hover:border-white/45 active:scale-95 transition-all cursor-pointer"
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -67,11 +67,6 @@ export default function Footer() {
             © 2026 Carliz Automotive. Every Second Counts.
           </p>
           <div className="flex space-x-6">
-            <img 
-              alt="Finish Flag" 
-              className="h-6 opacity-30 invert" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuANH7ZFCHmg9kvcqEcqNue30U_QfRoiQmKtdcOwDVHUHzOnUL9MV72dfzz2nXELmt4YUGBhKn-NbBQTPPr_cdH9SjdbEKURJbH-rI8GKveE2AVrF04uu_7qAEOK89NQb2RV4wfbZCKbVTtVuekRDKdre7a7ML6uJ1lBynMgtfBoh5J7A7hEUbDaM1myCNeeGeJPWK4rPmy0UiYis-9GoxaPwVZFlrfjVg6IICND2Z2F5jLVMu0gcthWKOAKBGiRFHJOrvpxxs6Q7CCc"
-            />
           </div>
         </div>
       </div>

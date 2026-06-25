@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import ConsultarReservasModal from './ConsultarReservasModal';
+import useDarkMode from '../hooks/useDarkMode';
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDark, toggleDark] = useDarkMode();
 
   // Track scroll position for header height HMR transitions
   useEffect(() => {
@@ -79,6 +81,14 @@ export default function Navbar() {
           
           {/* Desktop Right Actions (Hidden on Mobile) */}
           <div className="hidden md:flex items-center gap-4">
+            <button
+              onClick={toggleDark}
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-outline-variant/40 text-on-surface-variant hover:bg-surface-variant/50 dark:text-outline dark:hover:text-white transition-all duration-300 active:scale-90 cursor-pointer"
+              aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+            >
+              <span className="material-symbols-outlined text-xl font-bold">{isDark ? 'light_mode' : 'dark_mode'}</span>
+            </button>
+
             <button 
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 border border-secondary text-secondary dark:border-secondary-fixed dark:text-secondary-fixed px-5 py-2.5 rounded-full font-label-md text-xs uppercase tracking-widest hover:bg-secondary hover:text-white dark:hover:bg-secondary-fixed dark:hover:text-primary transition-all duration-300 active:scale-95 cursor-pointer"
@@ -159,6 +169,17 @@ export default function Navbar() {
 
             {/* Bottom Actions Drawer Panel */}
             <div className="space-y-4 pt-6 border-t border-outline-variant/15">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  toggleDark();
+                }}
+                className="w-full flex items-center justify-center gap-2 border border-outline-variant/40 text-on-surface-variant dark:text-outline py-3 px-4 rounded font-label-md text-xs uppercase tracking-widest hover:bg-surface-variant/50 transition-all cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-sm font-bold">{isDark ? 'light_mode' : 'dark_mode'}</span>
+                <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
+              </button>
+
               <button 
                 onClick={() => {
                   setIsMobileMenuOpen(false);
