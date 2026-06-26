@@ -551,11 +551,14 @@ export default function Quote() {
           {/* Media Section (7 Columns) */}
           <section className="hidden md:block col-span-1 md:col-span-7 relative bg-primary overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent z-10 w-32"></div>
-            <img 
-              alt="Luxury Sports Car" 
+            <video 
+              src="/assets/video5.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
               className="absolute inset-0 w-full h-full object-cover" 
               style={{ transform: `translateY(${scrollY * 0.05}px) scale(1.05)` }}
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHeV9CJ0jEl0LkZGdsNu8VoGcOOQy--HVkqMBn4r_SC6yT5DcYkQ6MVH5bduQFSG6Yl6WtoPlccyCfzaWH96uw07EQUtrR-Uu7hRa9GFvyrkgEw0z81bFAvR6dEw6OY0XrRdUr9HR4Zf6Fl_QGB5YE5JTI5hl2D2pQh27uyFI43VtBArqcRrdtqTf9SbgahlI5vfJPaW7dvX8HZAYRJQ10YpyMAXo_NcMTkUqH8UeLjSp7HApmIgIMb0K7Al7zzC2V7Ol46hCoynq3"
             />
             {/* Floating Info Card (Editorial Influence) */}
             <div className="absolute bottom-20 left-20 z-20 max-w-sm backdrop-blur-md bg-white/10 border border-white/20 p-8 space-y-4 reveal-on-scroll transition-all duration-1000 opacity-0 translate-y-10">

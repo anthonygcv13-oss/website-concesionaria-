@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 
 export default function ReelModal({ videos, onClose }) {
@@ -17,7 +18,7 @@ export default function ReelModal({ videos, onClose }) {
 
   if (!videos?.length) return null;
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -46,6 +47,7 @@ export default function ReelModal({ videos, onClose }) {
           className="w-full h-full object-cover"
         />
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }

@@ -15,13 +15,16 @@ export default function Services() {
 
       {/* Hero Section */}
       <header className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            alt="Luxury garage" 
-            className="w-full h-full object-cover" 
-            src="/assets/hero_services.png"
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <video 
+            src="/assets/video4.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover scale-115 origin-top"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/40 to-transparent z-10"></div>
         </div>
         <div className="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
           <div className="max-w-2xl">
