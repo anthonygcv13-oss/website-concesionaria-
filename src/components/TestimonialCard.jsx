@@ -2,12 +2,23 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReelModal from './ReelModal';
 
-export default function TestimonialCard({ item, navigate }) {
-  const [liked, setLiked] = useState(false);
+export default function TestimonialCard({ item, liked: propLiked, onLikeToggle, navigate }) {
+  const [localLiked, setLocalLiked] = useState(false);
   const [comments, setComments] = useState([]);
   const [email, setEmail] = useState('');
   const [input, setInput] = useState('');
   const [reelOpen, setReelOpen] = useState(false);
+
+  const isLiked = propLiked !== undefined ? propLiked : localLiked;
+  const likesCount = propLiked !== undefined ? (item.likes || 0) : (localLiked ? (item.initialLikes || 0) + 1 : (item.initialLikes || 0));
+
+  const handleLikeClick = () => {
+    if (onLikeToggle) {
+      onLikeToggle();
+    } else {
+      setLocalLiked(!localLiked);
+    }
+  };
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -148,20 +159,20 @@ export default function TestimonialCard({ item, navigate }) {
         {/* Like Button */}
         <button
           className={`border px-4 py-2.5 rounded flex items-center gap-2 transition-colors cursor-pointer ${
-            liked
+            isLiked
               ? 'border-red-500 text-red-500 bg-red-500/5'
               : 'border-outline-variant/30 text-outline-variant hover:border-secondary hover:text-secondary'
           }`}
-          onClick={() => setLiked(!liked)}
+          onClick={handleLikeClick}
         >
           <span
             className="material-symbols-outlined text-lg"
-            style={{ fontVariationSettings: liked ? "'FILL' 1" : "'FILL' 0" }}
+            style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
           >
             favorite
           </span>
           <span className="text-xs font-label-md font-bold">
-            {liked ? item.initialLikes + 1 : item.initialLikes}
+            {likesCount}
           </span>
         </button>
       </div>

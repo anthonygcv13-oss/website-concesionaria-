@@ -9,6 +9,43 @@ import CatalogSkeleton from '../components/CatalogSkeleton';
 import useScrollReveal from '../hooks/useScrollReveal';
 import PageTransition from '../components/PageTransition';
 
+function CustomSelect({ label, value, options, onChange, isOpen, onToggle }) {
+  return (
+    <div className="space-y-1.5 relative custom-select-container">
+      <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 dark:text-outline-variant/70 font-bold">{label}</label>
+      <div 
+        onClick={onToggle}
+        className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 dark:border-outline-variant/20 rounded px-3 py-2 text-on-surface dark:text-white flex items-center justify-between cursor-pointer focus-within:border-secondary dark:focus-within:border-secondary-fixed transition-all duration-300 select-none h-[38px] text-xs"
+      >
+        <span className="truncate">{value}</span>
+        <span className={`material-symbols-outlined text-[16px] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+      </div>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto bg-surface dark:bg-[#1c1b1b] border border-outline-variant/30 dark:border-outline-variant/20 rounded shadow-xl py-1 no-scrollbar animate-fade-in">
+          {options.map(opt => (
+            <div
+              key={opt}
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(opt);
+                onToggle();
+              }}
+              className={`px-3 py-2 text-xs cursor-pointer transition-colors ${
+                opt === value 
+                  ? 'bg-secondary/20 text-secondary font-bold' 
+                  : 'text-on-surface dark:text-outline-variant hover:bg-secondary/15 dark:hover:bg-secondary-fixed/15 hover:text-secondary'
+              }`}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Models() {
   const navigate = useNavigate();
   const [models, setModels] = useState([]);
@@ -23,6 +60,18 @@ export default function Models() {
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.custom-select-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -221,85 +270,65 @@ export default function Models() {
             <div className={`${showMobileFilters ? 'grid' : 'hidden'} lg:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm`}>
               {/* 1. Modelo */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Modelo</label>
+                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 dark:text-outline-variant/70 font-bold">Modelo</label>
                 <input
                   type="text"
                   placeholder="Buscar modelo..."
                   value={filters.modelo}
                   onChange={(e) => setFilters(prev => ({ ...prev, modelo: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary"
+                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 dark:border-outline-variant/20 rounded px-3 py-2 text-on-surface dark:text-white placeholder:text-on-surface-variant/40 dark:placeholder:text-outline-variant/30 focus:outline-none focus:border-secondary dark:focus:border-secondary-fixed focus:ring-1 focus:ring-secondary dark:focus:ring-secondary-fixed/30 transition-all duration-300 h-[38px] text-xs"
                 />
               </div>
 
               {/* 2. Marca */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Marca</label>
-                <select
-                  value={filters.marca}
-                  onChange={(e) => setFilters(prev => ({ ...prev, marca: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
-                >
-                  {uniqueBrands.map(b => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                label="Marca"
+                value={filters.marca}
+                options={uniqueBrands}
+                onChange={(val) => setFilters(prev => ({ ...prev, marca: val }))}
+                isOpen={openDropdown === 'marca'}
+                onToggle={() => setOpenDropdown(prev => prev === 'marca' ? null : 'marca')}
+              />
 
               {/* 3. Combustible */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Combustible</label>
-                <select
-                  value={filters.combustible}
-                  onChange={(e) => setFilters(prev => ({ ...prev, combustible: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
-                >
-                  {uniqueFuels.map(f => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                label="Combustible"
+                value={filters.combustible}
+                options={uniqueFuels}
+                onChange={(val) => setFilters(prev => ({ ...prev, combustible: val }))}
+                isOpen={openDropdown === 'combustible'}
+                onToggle={() => setOpenDropdown(prev => prev === 'combustible' ? null : 'combustible')}
+              />
 
               {/* 4. Transmisión */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Transmisión</label>
-                <select
-                  value={filters.transmision}
-                  onChange={(e) => setFilters(prev => ({ ...prev, transmision: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
-                >
-                  {uniqueTransmissions.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                label="Transmisión"
+                value={filters.transmision}
+                options={uniqueTransmissions}
+                onChange={(val) => setFilters(prev => ({ ...prev, transmision: val }))}
+                isOpen={openDropdown === 'transmision'}
+                onToggle={() => setOpenDropdown(prev => prev === 'transmision' ? null : 'transmision')}
+              />
 
               {/* 5. Color */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Color</label>
-                <select
-                  value={filters.color}
-                  onChange={(e) => setFilters(prev => ({ ...prev, color: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
-                >
-                  {uniqueColors.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                label="Color"
+                value={filters.color}
+                options={uniqueColors}
+                onChange={(val) => setFilters(prev => ({ ...prev, color: val }))}
+                isOpen={openDropdown === 'color'}
+                onToggle={() => setOpenDropdown(prev => prev === 'color' ? null : 'color')}
+              />
 
               {/* 6. Año */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold">Año</label>
-                <select
-                  value={filters.anio}
-                  onChange={(e) => setFilters(prev => ({ ...prev, anio: e.target.value }))}
-                  className="w-full bg-surface dark:bg-primary-container border border-outline-variant/30 rounded px-3 py-2 text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
-                >
-                  {uniqueYears.map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
-              </div>
+              <CustomSelect
+                label="Año"
+                value={filters.anio}
+                options={uniqueYears}
+                onChange={(val) => setFilters(prev => ({ ...prev, anio: val }))}
+                isOpen={openDropdown === 'anio'}
+                onToggle={() => setOpenDropdown(prev => prev === 'anio' ? null : 'anio')}
+              />
             </div>
 
             {/* Active Filters Summary */}
@@ -403,7 +432,7 @@ export default function Models() {
                           <span className="font-headline-lg text-2xl text-secondary font-bold">{model.price}</span>
                         </div>
                         <button
-                          className="w-full bg-primary text-secondary hover:bg-secondary hover:text-primary px-8 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded hover:translate-y-[-2px] active:scale-95 cursor-pointer shadow-md"
+                          className="w-full bg-transparent dark:bg-primary border border-secondary text-secondary hover:bg-secondary hover:text-white dark:hover:text-primary px-8 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded hover:translate-y-[-2px] active:scale-95 cursor-pointer shadow-md"
                           onClick={() => navigate('/cotizar', { state: { selectedModel: model.name } })}
                         >
                           Explorar Modelo
@@ -418,7 +447,7 @@ export default function Models() {
                   <div className="flex justify-center pt-8 pb-4">
                     <button
                       onClick={() => setVisibleCount(prev => prev + 10)}
-                      className="group flex items-center gap-3 bg-primary hover:bg-secondary text-secondary hover:text-primary px-10 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded border border-secondary hover:translate-y-[-1px] active:scale-95 cursor-pointer shadow-lg shadow-secondary/5"
+                      className="group flex items-center gap-3 bg-transparent dark:bg-primary hover:bg-secondary text-secondary hover:text-white dark:hover:text-primary px-10 py-4 font-label-md text-label-md uppercase tracking-widest transition-all duration-300 rounded border border-secondary hover:translate-y-[-1px] active:scale-95 cursor-pointer shadow-lg shadow-secondary/5"
                     >
                       <span>Cargar más</span>
                       <span className="material-symbols-outlined text-lg group-hover:rotate-180 transition-transform duration-500">expand_more</span>
@@ -442,7 +471,7 @@ export default function Models() {
                     color: 'Todos',
                     anio: 'Todos'
                   })}
-                  className="bg-primary text-secondary hover:bg-secondary hover:text-primary px-6 py-2.5 font-label-md text-xs uppercase tracking-widest transition-all duration-300 rounded cursor-pointer border border-secondary"
+                  className="bg-transparent dark:bg-primary text-secondary hover:bg-secondary hover:text-white dark:hover:text-primary px-6 py-2.5 font-label-md text-xs uppercase tracking-widest transition-all duration-300 rounded cursor-pointer border border-secondary"
                 >
                   Restablecer Filtros
                 </button>

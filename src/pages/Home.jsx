@@ -114,6 +114,17 @@ export default function Home() {
         const response = await api.get('/models');
         const modelsList = response.data?.success ? response.data.data : [];
         
+        // Reset old random likes database if migrating to 0-based likes
+        const storedLikesVersion = localStorage.getItem('carliz_likes_version_v3');
+        if (!storedLikesVersion) {
+          localStorage.removeItem('carliz_vehicles_likes');
+          localStorage.setItem('carliz_likes_version_v3', 'true');
+        }
+
+        // Load likes state from localStorage
+        const storedLikesData = JSON.parse(localStorage.getItem('carliz_vehicles_likes') || '{}');
+        let localStorageUpdated = false;
+
         const soldList = [];
         modelsList.forEach((m) => {
           const soldVehiclesForModel = m.vehicles ? m.vehicles.filter(v => v.status === 'sold') : [];
@@ -137,8 +148,16 @@ export default function Home() {
             const transValue = trans === 'automatic' ? 'Automático' : trans === 'manual' ? 'Manual' : trans;
             if (transValue) specs.push({ label: 'Transmisión', value: transValue, icon: 'speed' });
 
-            // Generate a random initial likes for database items
-            const initialLikes = Math.floor(Math.random() * 150) + 50;
+            // Generate or fetch persistent likes and liked status
+            const vehicleId = vehicle.id_vehicle;
+            let likes = storedLikesData[vehicleId]?.likes;
+            let liked = storedLikesData[vehicleId]?.liked || false;
+            
+            if (likes === undefined) {
+              likes = 0;
+              storedLikesData[vehicleId] = { likes, liked: false };
+              localStorageUpdated = true;
+            }
 
             // Generate buyer experience
             const defaultExperiences = [
@@ -170,12 +189,18 @@ export default function Home() {
               buyerName: randomBuyerName,
               buyerRole: randomBuyerRole,
               experience: randomExperience,
-              initialLikes,
+              initialLikes: likes,
+              likes,
+              liked,
               specs,
               reelVideos: [sampleReels[vehicle.id_vehicle % sampleReels.length]]
             });
           });
         });
+
+        if (localStorageUpdated) {
+          localStorage.setItem('carliz_vehicles_likes', JSON.stringify(storedLikesData));
+        }
 
         if (soldList.length > 0) {
           setSoldVehicles(soldList);
@@ -192,6 +217,29 @@ export default function Home() {
 
     fetchSoldVehicles();
   }, []);
+
+  const handleToggleLike = (vehicleId) => {
+    setSoldVehicles(prevVehicles => {
+      const updated = prevVehicles.map(v => {
+        if (v.id === vehicleId) {
+          const newLiked = !v.liked;
+          const newLikes = newLiked ? v.likes + 1 : v.likes - 1;
+          
+          // Update localStorage
+          const storedLikesData = JSON.parse(localStorage.getItem('carliz_vehicles_likes') || '{}');
+          const idNumeric = vehicleId.replace('db-sold-', '');
+          storedLikesData[idNumeric] = { likes: newLikes, liked: newLiked };
+          localStorage.setItem('carliz_vehicles_likes', JSON.stringify(storedLikesData));
+          
+          return { ...v, liked: newLiked, likes: newLikes, initialLikes: newLikes };
+        }
+        return v;
+      });
+      return updated;
+    });
+  };
+
+  const totalLikes = soldVehicles.reduce((sum, v) => sum + (v.likes || 0), 0);
 
   useEffect(() => {
     if (loadingSold || soldVehicles.length <= 1) return;
@@ -374,6 +422,12 @@ export default function Home() {
               <h2 className="font-headline-xl text-headline-xl text-white">
                 Autos <span className="luxury-gradient-text italic font-bold">Vendidos</span>
               </h2>
+              {!loadingSold && soldVehicles.length > 0 && (
+                <div className="flex items-center justify-center gap-2 mt-4 text-xs font-label-md tracking-wider text-outline-variant/70 uppercase">
+                  <span className="material-symbols-outlined text-red-500 animate-pulse text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+                  <span>Total de Valoraciones: {totalLikes} Likes</span>
+                </div>
+              )}
             </div>
 
             {/* Slider container with relative positioning and flanking arrow buttons */}
@@ -414,6 +468,8 @@ export default function Home() {
                       <TestimonialCard
                         key={item.id}
                         item={item}
+                        liked={item.liked}
+                        onLikeToggle={() => handleToggleLike(item.id)}
                         navigate={navigate}
                       />
                     ))}
