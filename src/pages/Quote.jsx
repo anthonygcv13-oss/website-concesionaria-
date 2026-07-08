@@ -39,12 +39,22 @@ export default function Quote() {
           modelsRes.data.data.forEach(m => {
             const availableVehicles = m.vehicles ? m.vehicles.filter(v => v.status === 'available') : [];
             availableVehicles.forEach(vehicle => {
+              let image = 'https://images.unsplash.com/photo-1617813903808-897d18727004?auto=format&fit=crop&q=80&w=800';
+              if (vehicle.images && vehicle.images.length > 0) {
+                const primaryImage = vehicle.images.find(img => img.is_primary) || vehicle.images[0];
+                if (primaryImage?.url) {
+                  image = primaryImage.url;
+                }
+              }
+
               mapped.push({
                 id: `vehicle-${vehicle.id_vehicle}`,
                 id_model: m.id_model,
                 id_vehicle: vehicle.id_vehicle,
                 name: `${m.name} (${vehicle.year} - ${vehicle.color})`,
-                price: parseFloat(vehicle.sale_price)
+                price: parseFloat(vehicle.sale_price),
+                image,
+                images: vehicle.images || []
               });
             });
           });
@@ -463,13 +473,34 @@ export default function Quote() {
 
                 {selectedVehicle && (
                   <div className="space-y-6 mt-6 animate-fade-in">
-                    <div className="bg-surface-container-low p-4 rounded-lg border border-outline-variant/30 flex justify-between items-center">
-                      <span className="font-label-md text-xs uppercase tracking-widest text-on-surface-variant/80 font-bold">
-                        precio_estimado:
-                      </span>
-                      <span className="font-headline-lg text-lg text-secondary font-bold">
-                        ${selectedVehicle.price.toLocaleString('en-US')}.00 USD
-                      </span>
+                    <div className="bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30 space-y-4">
+                      {selectedVehicle.image && (
+                        <div className="relative w-full h-48 sm:h-56 rounded-xl overflow-hidden border border-outline-variant/20 shadow-sm">
+                          <img
+                            src={selectedVehicle.image}
+                            alt={selectedVehicle.name}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-1">
+                        <div className="space-y-1">
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-bold">
+                            Modelo Seleccionado
+                          </span>
+                          <span className="font-body-md font-bold text-primary">
+                            {selectedVehicle.name}
+                          </span>
+                        </div>
+                        <div className="space-y-1 text-left sm:text-right">
+                          <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/70 font-bold">
+                            Precio Estimado
+                          </span>
+                          <span className="font-headline-lg text-lg text-secondary font-bold whitespace-nowrap">
+                            ${selectedVehicle.price.toLocaleString('en-US')}.00 USD
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="form-underline group">

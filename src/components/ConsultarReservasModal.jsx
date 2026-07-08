@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../services/api';
+import RegisterPaymentModal from './RegisterPaymentModal';
 
 export default function ConsultarReservasModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
@@ -9,6 +10,8 @@ export default function ConsultarReservasModal({ isOpen, onClose }) {
   const [searchedEmail, setSearchedEmail] = useState('');
   const [reservations, setReservations] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentRes, setPaymentRes] = useState(null);
 
   if (!isOpen) return null;
 
@@ -87,6 +90,17 @@ export default function ConsultarReservasModal({ isOpen, onClose }) {
     setError('');
     setReservations(null);
     setExpandedId(null);
+  };
+
+  const openPaymentModal = (res) => {
+    setPaymentRes(res);
+    setIsPaymentOpen(true);
+  };
+
+  const handlePaymentSaved = (payload) => {
+    setReservations(prev => prev.map(r => r.id_quote === (paymentRes?.id_quote) ? { ...r, status: 'aprobada', payment: payload } : r));
+    setIsPaymentOpen(false);
+    setPaymentRes(null);
   };
 
   return (
@@ -341,20 +355,28 @@ export default function ConsultarReservasModal({ isOpen, onClose }) {
                               </div>
                             </div>
 
-                            {/* Status Bottom Banner */}
-                            <div className={`p-4 rounded-lg border text-sm font-semibold flex items-center gap-2.5 ${
-                              (res.status || 'pendiente').toLowerCase() === 'aprobada'
-                                ? 'bg-green-50 text-green-800 border-green-200/50'
-                                : 'bg-amber-50 text-amber-800 border-amber-200/50'
-                            }`}>
-                              <span className="material-symbols-outlined text-[20px]">
-                                {(res.status || 'pendiente').toLowerCase() === 'aprobada' ? 'check_circle' : 'info'}
-                              </span>
-                              <span>
-                                {(res.status || 'pendiente').toLowerCase() === 'aprobada' 
-                                  ? 'Aprobada: Cotización validada y autorizada por un asesor comercial.'
-                                  : 'Pendiente: Esperando revisión y confirmación del operador de ventas.'}
-                              </span>
+                            <div className="flex flex-col gap-3">
+                              <div className="flex justify-end gap-3">
+                                {((res.status || '').toLowerCase() !== 'aprobada') && (
+                                  <button onClick={() => openPaymentModal(res)} className="px-4 py-2 bg-secondary text-white rounded font-semibold">Registrar Pago</button>
+                                )}
+                              </div>
+
+                              {/* Status Bottom Banner */}
+                              <div className={`p-4 rounded-lg border text-sm font-semibold flex items-center gap-2.5 ${
+                                (res.status || 'pendiente').toLowerCase() === 'aprobada'
+                                  ? 'bg-green-50 text-green-800 border-green-200/50'
+                                  : 'bg-amber-50 text-amber-800 border-amber-200/50'
+                              }`}>
+                                <span className="material-symbols-outlined text-[20px]">
+                                  {(res.status || 'pendiente').toLowerCase() === 'aprobada' ? 'check_circle' : 'info'}
+                                </span>
+                                <span>
+                                  {(res.status || 'pendiente').toLowerCase() === 'aprobada' 
+                                    ? 'Aprobada: Cotización validada y autorizada por un asesor comercial.'
+                                    : 'Pendiente: Esperando revisión y confirmación del operador de ventas.'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -366,6 +388,8 @@ export default function ConsultarReservasModal({ isOpen, onClose }) {
             </div>
           )}
         </div>
+        {/* Register Payment Modal */}
+        <RegisterPaymentModal isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} reservation={paymentRes} onSaved={handlePaymentSaved} />
       </div>
     </div>
   );

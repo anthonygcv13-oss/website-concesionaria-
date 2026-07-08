@@ -179,6 +179,13 @@ export default function Home() {
               "https://cdn.pixabay.com/video/2023/11/20/190718-885957535_large.mp4"
             ];
 
+            // Map and sort database videos if they exist, otherwise fallback to sampleReels
+            const dbVideos = vehicle.videos && vehicle.videos.length > 0
+              ? [...vehicle.videos]
+                  .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+                  .map(v => v.url)
+              : [sampleReels[vehicle.id_vehicle % sampleReels.length]];
+
             soldList.push({
               id: `db-sold-${vehicle.id_vehicle}`,
               vehicleName: `${m.brand ? m.brand.name : ''} ${m.name}`,
@@ -193,7 +200,7 @@ export default function Home() {
               likes,
               liked,
               specs,
-              reelVideos: [sampleReels[vehicle.id_vehicle % sampleReels.length]]
+              reelVideos: dbVideos
             });
           });
         });

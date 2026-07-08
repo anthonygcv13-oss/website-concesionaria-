@@ -336,54 +336,35 @@ export default function Models() {
               <div className="mt-4 flex flex-wrap gap-2 items-center text-xs">
                 <span className="text-on-surface-variant/80">Filtros activos:</span>
                 {filters.marca !== 'Todas' && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Marca: {filters.marca}
-                    <button onClick={() => setFilters(p => ({ ...p, marca: 'Todas' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
                 {filters.modelo && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Modelo: "{filters.modelo}"
-                    <button onClick={() => setFilters(p => ({ ...p, modelo: '' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
                 {filters.combustible !== 'Todos' && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Combustible: {filters.combustible}
-                    <button onClick={() => setFilters(p => ({ ...p, combustible: 'Todos' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
                 {filters.transmision !== 'Todas' && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Transmisión: {filters.transmision}
-                    <button onClick={() => setFilters(p => ({ ...p, transmision: 'Todas' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
                 {filters.color !== 'Todos' && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Color: {filters.color}
-                    <button onClick={() => setFilters(p => ({ ...p, color: 'Todos' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
                 {filters.anio !== 'Todos' && (
-                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5">
+                  <span className="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">
                     Año: {filters.anio}
-                    <button onClick={() => setFilters(p => ({ ...p, anio: 'Todos' }))} className="hover:text-primary cursor-pointer font-bold">×</button>
                   </span>
                 )}
-                <button
-                  onClick={() => setFilters({
-                    combustible: 'Todos',
-                    transmision: 'Todas',
-                    marca: 'Todas',
-                    modelo: '',
-                    color: 'Todos',
-                    anio: 'Todos'
-                  })}
-                  className="text-secondary hover:underline cursor-pointer ml-2 text-xs font-semibold"
-                >
-                  Restablecer
-                </button>
               </div>
             )}
           </div>
@@ -404,7 +385,7 @@ export default function Models() {
                     >
                     <div className="md:w-3/5 overflow-hidden relative aspect-video md:aspect-auto h-[300px] md:h-[500px]">
                       <VehicleImageCarousel
-                        images={model.images}
+                        images={model.images && model.images.length > 0 ? model.images : [{ url: model.image, display_order: 0 }]}
                         name={model.name}
                         tag={model.tag}
                       />

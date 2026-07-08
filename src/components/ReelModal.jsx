@@ -2,6 +2,16 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 
+function getYoutubeEmbedUrl(url) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`;
+  }
+  return null;
+}
+
 export default function ReelModal({ videos, onClose }) {
   useEffect(() => {
     function handleKey(e) {
@@ -17,6 +27,8 @@ export default function ReelModal({ videos, onClose }) {
   }, []);
 
   if (!videos?.length) return null;
+
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(videos[0]);
 
   return createPortal(
     <motion.div
@@ -39,13 +51,24 @@ export default function ReelModal({ videos, onClose }) {
         className="w-full max-w-[380px] aspect-[9/16] bg-black rounded-xl overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <video
-          src={videos[0]}
-          controls
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover"
-        />
+        {youtubeEmbedUrl ? (
+          <iframe
+            src={youtubeEmbedUrl}
+            title="Video Reel"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full object-cover border-0"
+          />
+        ) : (
+          <video
+            src={videos[0]}
+            controls
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        )}
       </div>
     </motion.div>,
     document.body
