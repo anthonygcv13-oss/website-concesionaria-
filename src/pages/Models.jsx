@@ -185,14 +185,20 @@ export default function Models() {
     filters.color !== 'Todos' ||
     filters.anio !== 'Todos';
 
+  const normalizeText = (str) =>
+    str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : '';
+
   const filteredModels = models.filter(model => {
     // 1. Brand Filter
     if (filters.marca !== 'Todas' && model.collection !== filters.marca) {
       return false;
     }
     // 2. Model Search Filter
-    if (filters.modelo && !model.name.toLowerCase().includes(filters.modelo.toLowerCase())) {
-      return false;
+    if (filters.modelo) {
+      const searchNormalized = normalizeText(filters.modelo);
+      if (!normalizeText(model.name).includes(searchNormalized)) {
+        return false;
+      }
     }
     // 3. Fuel Filter
     if (filters.combustible !== 'Todos' && model.fuel_type !== filters.combustible) {
